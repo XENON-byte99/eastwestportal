@@ -5,3 +5,7 @@ requests
 cryptography
 PyJWT
 Pillow
+# Production
+gunicorn
+whitenoise
+mysqlclient

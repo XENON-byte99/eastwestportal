@@ -1,0 +1,46 @@
+name: Deploy to Hostinger VPS (eee.firebaseit.com)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH to Hostinger VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "=== Navigating to project directory ==="
+            cd /var/www/eastwestportal
+
+            echo "=== Pulling latest changes ==="
+            git pull origin main
+
+            echo "=== Activating virtual environment ==="
+            source .venv/bin/activate
+
+            echo "=== Installing requirements ==="
+            pip install -r requirements.txt
+
+            echo "=== Running migrations ==="
+            python manage.py migrate --noinput
+
+            echo "=== Collecting static files ==="
+            python manage.py collectstatic --noinput
+
+            echo "=== Restarting application ==="
+            sudo systemctl restart gunicorn_ewportal
+
+            echo "=== Deployment complete! ==="

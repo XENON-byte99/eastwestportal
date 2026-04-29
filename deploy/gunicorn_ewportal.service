@@ -1,0 +1,17 @@
+[Unit]
+Description=EastWest Portal Gunicorn Daemon
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/eastwestportal
+ExecStart=/var/www/eastwestportal/.venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/run/gunicorn_ewportal.sock \
+    config.wsgi:application
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
