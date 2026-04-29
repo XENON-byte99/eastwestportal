@@ -81,5 +81,10 @@ class SetRemoteAddrFromForwardedFor:
             request.META['REMOTE_ADDR'] = ip
         elif 'HTTP_X_REAL_IP' in request.META:
             request.META['REMOTE_ADDR'] = request.META['HTTP_X_REAL_IP']
+            
+        if not request.META.get('REMOTE_ADDR'):
+            request.META['REMOTE_ADDR'] = '127.0.0.1'
+            
         return self.get_response(request)
+
 
