@@ -16,7 +16,33 @@ from projects.models import Paper, Capstone
 
 User = get_user_model()
 from .utils import send_portal_notification, notify_admins
-
+def csrf_failure(request, reason=""):
+    context = {
+        'reason': reason,
+        'path': request.path,
+        'method': request.method,
+        'headers': dict(request.headers),
+        'origin': request.headers.get('Origin', 'No Origin'),
+        'referer': request.headers.get('Referer', 'No Referer'),
+    }
+    from django.http import HttpResponse
+    import json
+    html = f"""
+    <html>
+    <body>
+        <h1>CSRF Verification Failed (Custom Debug)</h1>
+        <p><strong>Reason:</strong> {reason}</p>
+        <p><strong>Method:</strong> {request.method}</p>
+        <p><strong>Path:</strong> {request.path}</p>
+        <p><strong>Origin:</strong> {context['origin']}</p>
+        <p><strong>Referer:</strong> {context['referer']}</p>
+        <hr>
+        <h3>All Headers:</h3>
+        <pre>{json.dumps(context['headers'], indent=2)}</pre>
+    </body>
+    </html>
+    """
+    return HttpResponse(html, status=403)
 
 
 def is_staff(user):

@@ -19,7 +19,7 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
     if origin.strip()
 ]
-
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 # Production security settings (only when DEBUG=False)
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
@@ -84,8 +84,8 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'core.middleware.ExemptCSRFMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+
 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'allauth.account.middleware.AccountMiddleware',
