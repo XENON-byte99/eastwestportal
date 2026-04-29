@@ -66,3 +66,15 @@ class EnrollmentRequiredMiddleware:
 
         return self.get_response(request)
 
+class ExemptCSRFMiddleware:
+    """
+    Temporary middleware to bypass CSRF enforcement on login
+    to verify if the 403 error is CSRF related.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path.startswith('/accounts/login/'):
+            setattr(request, '_dont_enforce_csrf_checks', True)
+        return self.get_response(request)
