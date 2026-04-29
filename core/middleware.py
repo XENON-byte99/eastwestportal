@@ -66,15 +66,20 @@ class EnrollmentRequiredMiddleware:
 
         return self.get_response(request)
 
-class ExemptCSRFMiddleware:
+class SetRemoteAddrFromForwardedFor:
     """
-    Temporary middleware to bypass CSRF enforcement on login
-    to verify if the 403 error is CSRF related.
+    Middleware to set REMOTE_ADDR from X-Forwarded-For header.
+    Crucial for reverse proxy setups with Unix sockets where
+    REMOTE_ADDR is often missing.
     """
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path.startswith('/accounts/login/'):
-            setattr(request, '_dont_enforce_csrf_checks', True)
+        if 'HTTP_X_FORWARDED_FOR' in request.META:
+            ip = request.META['HTTP_X_FORWARDED_FOR'].split(',')[0].strip()
+            request.META['REMOTE_ADDR'] = ip
+        elif 'HTTP_X_REAL_IP' in request.META:
+            request.META['REMOTE_ADDR'] = request.META['HTTP_X_REAL_IP']
         return self.get_response(request)
+
