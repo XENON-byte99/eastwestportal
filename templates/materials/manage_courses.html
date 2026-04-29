@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Courses — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Course Management</h4>
+        <p class="text-muted small">Pre-define academic courses for the portal.</p>
+    </div>
+    <button class="premium-btn d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+        <i class="fas fa-plus"></i> Add New Course
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="px-4 py-3 text-uppercase small fw-bold text-muted" style="width: 15%">Code</th>
+                    <th class="py-3 text-uppercase small fw-bold text-muted">Course Name</th>
+                    <th class="py-3 text-uppercase small fw-bold text-muted">Department</th>
+                    <th class="py-3 text-uppercase small fw-bold text-muted">Created</th>
+                    <th class="px-4 py-3 text-end text-uppercase small fw-bold text-muted">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="course-table-body">
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Add Academic Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="addCourseForm">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Course Code</label>
+                        <input type="text" name="code" class="form-control rounded-3" placeholder="e.g. CSE101" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Course Full Name</label>
+                        <input type="text" name="name" class="form-control rounded-3" placeholder="e.g. Structured Programming" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold">Department (Optional)</label>
+                        <input type="text" name="department" class="form-control rounded-3" placeholder="e.g. CSE">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 p-4">
+                <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="submitCourse()" class="btn premium-btn px-4">Create Course</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Course Modal -->
+<div class="modal fade" id="editCourseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Edit Course Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editCourseForm">
+                    <input type="hidden" name="course_id">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Course Code</label>
+                        <input type="text" name="code" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Course Full Name</label>
+                        <input type="text" name="name" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold">Department</label>
+                        <input type="text" name="department" class="form-control rounded-3">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 p-4">
+                <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="updateCourse()" class="btn premium-btn px-4">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allCourses = [];
+
+    async function loadCourses() {
+        const res = await fetch('{% url "materials:api_course_manage" %}');
+        const data = await res.json();
+        allCourses = data.courses;
+        const body = document.getElementById('course-table-body');
+        
+        if (data.courses.length === 0) {
+            body.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">No courses found. Add one to get started.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = data.courses.map(c => `
+            <tr>
+                <td class="px-4"><span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2">${c.code}</span></td>
+                <td><span class="fw-semibold">${c.name}</span></td>
+                <td><span class="text-muted small">${c.department || 'N/A'}</span></td>
+                <td><span class="text-muted small">${new Date(c.created_at).toLocaleDateString()}</span></td>
+                <td class="px-4 text-end">
+                    <button class="btn btn-sm btn-outline-primary border-0 rounded-circle me-1" onclick="openEditModal(${c.id})" title="Edit Course">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="deleteCourse(${c.id})" title="Delete Course">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openEditModal(id) {
+        const c = allCourses.find(course => course.id === id);
+        const modal = document.getElementById('editCourseModal');
+        const form = document.getElementById('editCourseForm');
+        form.elements['course_id'].value = c.id;
+        form.elements['code'].value = c.code;
+        form.elements['name'].value = c.name;
+        form.elements['department'].value = c.department;
+        new bootstrap.Modal(modal).show();
+    }
+
+    async function submitCourse() {
+        const form = document.getElementById('addCourseForm');
+        const formData = new FormData(form);
+        const jsonData = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('{% url "materials:api_course_manage" %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify(jsonData)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('addCourseModal')).hide();
+                form.reset();
+                loadCourses();
+            } else { alert(result.error); }
+        } catch (e) { console.error(e); }
+    }
+
+    async function updateCourse() {
+        const form = document.getElementById('editCourseForm');
+        const id = form.elements['course_id'].value;
+        const jsonData = {
+            code: form.elements['code'].value,
+            name: form.elements['name'].value,
+            department: form.elements['department'].value
+        };
+
+        try {
+            const res = await fetch(`/materials/api/courses/manage/${id}/`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify(jsonData)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('editCourseModal')).hide();
+                loadCourses();
+            } else { alert(result.error); }
+        } catch (e) { console.error(e); }
+    }
+
+    async function deleteCourse(id) {
+        if (!confirm('Are you sure you want to delete this course? All related materials will be removed.')) return;
+        try {
+            const res = await fetch(`/materials/api/courses/manage/${id}/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            if (res.ok) loadCourses();
+        } catch (e) { console.error(e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCourses);
+</script>
+{% endblock %}

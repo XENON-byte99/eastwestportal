@@ -1,0 +1,65 @@
+<!-- User Summary -->
+<div class="card p-3 mb-4 text-center">
+    <div style="width: 64px; height: 64px; margin: 0 auto 12px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <span style="color: white; font-weight: 800; font-size: 1.2rem;">{{ user.first_name|first }}{{ user.last_name|first }}</span>
+    </div>
+    <h6 class="mb-0 fw-bold">{{ user.get_full_name }}</h6>
+    <small class="text-muted">{{ user.get_role_display }}</small>
+</div>
+
+<nav class="nav-card">
+    <a href="{% url 'feed:index' %}" class="nav-link-portal {% if request.resolver_match.namespace == 'feed' %}active{% endif %}">
+        <i class="fas fa-rss"></i> News Feed
+    </a>
+    <a href="{% url 'core:home' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fas fa-chart-line"></i> Dashboard
+    </a>
+    {% if not user.is_staff and not user.is_superuser %}
+    <a href="{% url 'core:enrollment' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'enrollment' %}active{% endif %}">
+        <i class="fas fa-user-graduate"></i> Course Enrollment
+    </a>
+    {% endif %}
+
+    <a href="{% url 'core:my_uploads' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'my_uploads' %}active{% endif %}">
+        <i class="fas fa-cloud-upload-alt"></i> My Uploads
+    </a>
+
+    
+    <a href="{% url 'materials:index' %}" class="nav-link-portal {% if request.resolver_match.namespace == 'materials' %}active{% endif %}">
+
+        <i class="fas fa-book-open"></i> Academic Materials
+    </a>
+    <a href="{% url 'marketplace:index' %}" class="nav-link-portal {% if request.resolver_match.namespace == 'marketplace' %}active{% endif %}">
+        <i class="fas fa-store"></i> Marketplace
+    </a>
+    <a href="{% url 'projects:index' %}" class="nav-link-portal {% if request.resolver_match.namespace == 'projects' %}active{% endif %}">
+        <i class="fas fa-flask"></i> Research & Projects
+    </a>
+    
+    {% if user.is_staff or user.is_superuser %}
+    <hr class="my-3 opacity-10">
+    <h6 class="ps-3 text-uppercase small fw-bold text-muted mb-2">Management</h6>
+    <a href="{% url 'core:moderation_dashboard' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'moderation_dashboard' %}active{% endif %}">
+        <i class="fas fa-shield-halved"></i> Moderation Queue
+    </a>
+    <a href="{% url 'materials:manage_courses' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'manage_courses' %}active{% endif %}">
+        <i class="fas fa-chalkboard-teacher"></i> Manage Courses
+    </a>
+    <a href="{% url 'materials:manage_types' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'manage_types' %}active{% endif %}">
+        <i class="fas fa-tags"></i> Manage Categories
+    </a>
+    <a href="{% url 'core:manage_users' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
+        <i class="fas fa-user-tie"></i> Manage Faculty
+    </a>
+    <a href="{% url 'core:manage_users' %}" class="nav-link-portal">
+        <i class="fas fa-users-cog"></i> Account Approvals
+    </a>
+    <a href="{% url 'core:moderation_dashboard' %}" class="nav-link-portal">
+        <i class="fas fa-clipboard-list"></i> Enrollment Records
+    </a>
+    <a href="/admin/" class="nav-link-portal">
+
+        <i class="fas fa-user-gear"></i> System Backend
+    </a>
+    {% endif %}
+</nav>

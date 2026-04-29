@@ -1,0 +1,456 @@
+{% extends 'base.html' %}
+
+{% block title %}My Uploads — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">My Submission History</h2>
+            <p class="text-muted">Track the status of your contributions and manage your uploads.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'feed:index' %}" class="btn premium-btn rounded-pill"><i class="fas fa-plus me-2"></i>New Post</a>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4">
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Total Submissions</small>
+                <h3 class="fw-bold mb-0 text-primary">{{ posts.count|add:materials.count|add:listings.count|add:papers.count|add:capstones.count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4">
+                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Approved</small>
+                <h3 class="fw-bold mb-0 text-success">
+                    {% with approved_count=0 %}
+                        {# This is a bit complex in template, but simple for now #}
+                        Auto-calculated in logic
+                    {% endwith %}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="uploadTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-posts">Posts</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-materials">Materials</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-marketplace">Marketplace</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-projects">Research/Capstone</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="uploadTabsContent">
+        <!-- Posts Tab -->
+        <div class="tab-pane fade show active" id="tab-posts">
+            {% if posts %}
+                <div class="row g-3">
+                    {% for post in posts %}
+                    <div class="col-md-6">
+                        <div class="card p-4 border-0 shadow-sm rounded-4 h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="badge {% if post.is_draft %}bg-warning text-dark{% elif post.is_approved %}bg-success{% else %}bg-info{% endif %} rounded-pill">
+                                        {% if post.is_draft %}Draft{% elif post.is_approved %}Approved{% else %}Pending Review{% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light rounded-circle" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                        <li><a class="dropdown-item fw-semibold" href="#" onclick="editPost({{ post.id }}, '{{ post.content|escapejs }}')"><i class="fas fa-edit me-2"></i>Edit Content</a></li>
+                                        <li><a class="dropdown-item fw-semibold text-danger" href="#" onclick="deletePost({{ post.id }})"><i class="fas fa-trash-alt me-2"></i>Delete</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="mb-0 text-dark small" style="white-space: pre-wrap;">{{ post.content|truncatechars:150 }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-rss fa-3x mb-3 text-muted opacity-25"></i>
+                    <h5>No posts yet</h5>
+                    <p class="text-muted small mb-0">Share your thoughts on the news feed!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Materials Tab -->
+        <div class="tab-pane fade" id="tab-materials">
+            {% if materials %}
+                <div class="card border-0 shadow-sm overflow-hidden rounded-4">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Title</th>
+                                <th>Course</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mat in materials %}
+                            <tr>
+                                <td class="ps-4 py-3">
+                                    <div class="fw-bold">{{ mat.title }}</div>
+                                    <small class="text-muted">{{ mat.material_type }}</small>
+                                </td>
+                                <td>{{ mat.course.code }}</td>
+                                <td>
+                                    <span class="badge {% if mat.is_approved %}bg-success{% else %}bg-info{% endif %} rounded-pill">
+                                        {% if mat.is_approved %}Approved{% else %}Pending Review{% endif %}
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button onclick="editMaterial({{ mat.id }}, '{{ mat.title|escapejs }}', '{{ mat.description|escapejs }}')" class="btn btn-sm btn-outline-primary rounded-pill me-1" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button onclick="deleteMaterial({{ mat.id }})" class="btn btn-sm btn-outline-danger rounded-pill" title="Delete"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-book-open fa-3x mb-3 text-muted opacity-25"></i>
+                    <h5>No academic materials</h5>
+                    <p class="text-muted small mb-0">Contribute to the library to help others!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Marketplace Tab -->
+        <div class="tab-pane fade" id="tab-marketplace">
+            {% if listings %}
+                <div class="row g-3">
+                    {% for item in listings %}
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="badge {% if item.is_approved %}bg-success{% else %}bg-info{% endif %} rounded-pill">
+                                        {% if item.is_approved %}Active{% else %}Pending{% endif %}
+                                    </span>
+                                    <span class="fw-bold text-primary">{{ item.price }} BDT</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">{{ item.item_name }}</h6>
+                                <p class="text-muted small mb-3">{{ item.get_listing_type_display }} — {{ item.get_condition_display }}</p>
+                                <div class="d-flex gap-2 mt-auto">
+                                    <button onclick="editListing({{ item.id }}, '{{ item.item_name|escapejs }}', '{{ item.price|escapejs }}', '{{ item.description|escapejs }}')" class="btn btn-sm btn-outline-primary flex-grow-1 rounded-pill">Edit</button>
+                                    <button onclick="deleteListing({{ item.id }})" class="btn btn-sm btn-outline-danger flex-grow-1 rounded-pill">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-store fa-3x mb-3 text-muted opacity-25"></i>
+                    <h5>No listings</h5>
+                    <p class="text-muted small mb-0">Sell your unused books or gadgets here.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Projects Tab -->
+        <div class="tab-pane fade" id="tab-projects">
+            {% if papers or capstones %}
+                <div class="list-group gap-3">
+                    {% for paper in papers %}
+                        <div class="list-group-item border-0 shadow-sm rounded-4 p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-purple-soft text-purple rounded-pill mb-2">Research Paper</span>
+                                    <h6 class="fw-bold mb-1">{{ paper.title }}</h6>
+                                    <small class="text-muted">Approved: {% if paper.is_approved %}Yes{% else %}No{% endif %}</small>
+                                </div>
+                                <button onclick="deletePaper({{ paper.id }})" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete Paper"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% for cap in capstones %}
+                        <div class="list-group-item border-0 shadow-sm rounded-4 p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-indigo-soft text-indigo rounded-pill mb-2">Capstone Project</span>
+                                    <h6 class="fw-bold mb-1">{{ cap.project_title }}</h6>
+                                    <small class="text-muted">Approved: {% if cap.is_approved %}Yes{% else %}No{% endif %}</small>
+                                </div>
+                                <button onclick="deleteCapstone({{ cap.id }})" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete Capstone"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-flask fa-3x mb-3 text-muted opacity-25"></i>
+                    <h5>No research projects</h5>
+                    <p class="text-muted small mb-0">Showcase your academic achievements.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Material Modal -->
+<div class="modal fade" id="editMaterialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Edit Resource</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editMaterialForm" enctype="multipart/form-data">
+                    <input type="hidden" name="material_id" id="edit-material-id">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title</label>
+                        <input type="text" id="edit-title" name="title" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea id="edit-description" name="description" class="form-control rounded-3" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Append Files</label>
+                        <input type="file" name="files" class="form-control rounded-3" multiple>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Append Links</label>
+                        <input type="url" name="links" class="form-control rounded-3 mb-2" placeholder="https://example.com">
+                        <input type="url" name="links" class="form-control rounded-3" placeholder="https://example2.com (Optional)">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 px-4 pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="submitUpdate()" class="btn premium-btn rounded-pill px-4">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Post Modal -->
+<div class="modal fade" id="editPostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Edit Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editPostForm" enctype="multipart/form-data">
+                    <input type="hidden" id="edit-post-id" name="post_id">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Post Content</label>
+                        <textarea id="edit-post-content" name="content" class="form-control rounded-3" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Attach Media (Images/Video)</label>
+                        <input type="file" name="media" class="form-control rounded-3" accept="image/*,video/*">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 px-4 pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="submitPostUpdate()" class="btn premium-btn rounded-pill px-4">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Listing Modal -->
+<div class="modal fade" id="editListingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Edit Marketplace Listing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editListingForm">
+                    <input type="hidden" id="edit-listing-id">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Item Name</label>
+                        <input type="text" id="edit-listing-name" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Price (BDT)</label>
+                        <input type="number" id="edit-listing-price" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea id="edit-listing-desc" class="form-control rounded-3" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 px-4 pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="submitListingUpdate()" class="btn premium-btn rounded-pill px-4">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Delete Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-4 text-center">
+                <div class="text-danger mb-3" style="font-size: 3rem;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Delete Item?</h5>
+                <p class="text-muted small mb-4">This action cannot be undone. Do you wish to continue?</p>
+                
+                <input type="hidden" id="delete-item-id">
+                <input type="hidden" id="delete-item-type">
+                
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" onclick="executeDelete()" class="btn btn-danger rounded-pill px-4">Confirm Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editPost(id, content) {
+    document.getElementById('edit-post-id').value = id;
+    document.getElementById('edit-post-content').value = content;
+    new bootstrap.Modal(document.getElementById('editPostModal')).show();
+}
+
+async function submitPostUpdate() {
+    const id = document.getElementById('edit-post-id').value;
+    const form = document.getElementById('editPostForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch(`/feed/api/posts/${id}/`, {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        });
+        if(response.ok) location.reload();
+        else alert('Update failed');
+    } catch(e) { console.error(e); }
+}
+
+function editListing(id, name, price, desc) {
+    document.getElementById('edit-listing-id').value = id;
+    document.getElementById('edit-listing-name').value = name;
+    document.getElementById('edit-listing-price').value = parseFloat(price) || 0;
+    document.getElementById('edit-listing-desc').value = desc;
+    new bootstrap.Modal(document.getElementById('editListingModal')).show();
+}
+
+async function submitListingUpdate() {
+    const id = document.getElementById('edit-listing-id').value;
+    const payload = {
+        item_name: document.getElementById('edit-listing-name').value,
+        price: document.getElementById('edit-listing-price').value,
+        description: document.getElementById('edit-listing-desc').value
+    };
+    try {
+        const response = await fetch(`/marketplace/api/listings/${id}/`, {
+            method: 'PATCH',
+            headers: { 
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        if(response.ok) location.reload();
+        else alert('Update failed');
+    } catch(e) { console.error(e); }
+}
+
+function editMaterial(id, title, desc) {
+    document.getElementById('edit-material-id').value = id;
+    document.getElementById('edit-title').value = title;
+    document.getElementById('edit-description').value = desc;
+    new bootstrap.Modal(document.getElementById('editMaterialModal')).show();
+}
+
+async function submitUpdate() {
+    const id = document.getElementById('edit-material-id').value;
+    const form = document.getElementById('editMaterialForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch(`/materials/api/materials/${id}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData
+        });
+        const result = await response.json();
+        if(response.ok) {
+            location.reload();
+        } else {
+            alert(result.error || 'Update failed');
+        }
+    } catch(e) { console.error(e); }
+}
+
+function deletePost(id) { openDeleteModal(id, 'post'); }
+function deleteListing(id) { openDeleteModal(id, 'listing'); }
+function deleteMaterial(id) { openDeleteModal(id, 'material'); }
+function deletePaper(id) { openDeleteModal(id, 'paper'); }
+function deleteCapstone(id) { openDeleteModal(id, 'capstone'); }
+
+function openDeleteModal(id, type) {
+    document.getElementById('delete-item-id').value = id;
+    document.getElementById('delete-item-type').value = type;
+    const modalEl = document.getElementById('deleteConfirmModal');
+    new bootstrap.Modal(modalEl).show();
+}
+
+async function executeDelete() {
+    const id = document.getElementById('delete-item-id').value;
+    const type = document.getElementById('delete-item-type').value;
+    let url = '';
+    
+    if(type === 'post') url = `/feed/api/posts/${id}/`;
+    else if(type === 'listing') url = `/marketplace/api/listings/${id}/`;
+    else if(type === 'material') url = `/materials/api/materials/${id}/`;
+    else if(type === 'paper') url = `/projects/api/papers/${id}/`;
+    else if(type === 'capstone') url = `/projects/api/capstones/${id}/`;
+    
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+        if(response.ok) location.reload();
+        else alert('Failed to delete item.');
+    } catch(e) { console.error(e); }
+}
+</script>
+
+<style>
+    .bg-purple-soft { background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .bg-indigo-soft { background-color: rgba(79, 70, 229, 0.1); color: #4f46e5; }
+    .rounded-4 { border-radius: 1.25rem !important; }
+</style>
+{% endblock %}

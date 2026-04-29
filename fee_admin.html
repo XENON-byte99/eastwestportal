@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Fee Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+
+        .dashboard-card {
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-paid {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-overdue {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .fee-item:nth-child(even) {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mr-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                    <path
+                        d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                </svg>
+                <div>
+                    <h1 class="text-2xl font-bold">University Fee Portal</h1>
+                    <p class="text-indigo-200 text-sm">Admin Dashboard</p>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div class="mr-4">
+                    <p class="text-sm">Welcome, Admin</p>
+                    <p class="text-xs text-indigo-200">Last login: Today, 09:45 AM</p>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="dashboard-card bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Students</p>
+                        <h3 class="text-2xl font-bold">1,248</h3>
+                    </div>
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-green-500 text-sm font-medium">↑ 12%</span>
+                    <span class="text-gray-500 text-sm"> from last semester</span>
+                </div>
+            </div>
+
+            <div class="dashboard-card bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Fees Collected</p>
+                        <h3 class="text-2xl font-bold">$842,250</h3>
+                    </div>
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-green-500 text-sm font-medium">↑ 8.3%</span>
+                    <span class="text-gray-500 text-sm"> from last semester</span>
+                </div>
+            </div>
+
+            <div class="dashboard-card bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Pending Payments</p>
+                        <h3 class="text-2xl font-bold">$156,430</h3>
+                    </div>
+                    <div class="p-2 bg-yellow-100 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-red-500 text-sm font-medium">↑ 5.2%</span>
+                    <span class="text-gray-500 text-sm"> from last semester</span>
+                </div>
+            </div>
+
+            <div class="dashboard-card bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Overdue Payments</p>
+                        <h3 class="text-2xl font-bold">$78,120</h3>
+                    </div>
+                    <div class="p-2 bg-red-100 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-red-500 text-sm font-medium">↑ 2.8%</span>
+                    <span class="text-gray-500 text-sm"> from last semester</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-lg font-semibold mb-4">Filter Students</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                    <select
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Departments</option>
+                        <option value="cs">Computer Science</option>
+                        <option value="eng">Engineering</option>
+                        <option value="bus">Business</option>
+                        <option value="arts">Arts & Humanities</option>
+                        <option value="med">Medical Sciences</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                    <select
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Years</option>
+                        <option value="1">First Year</option>
+                        <option value="2">Second Year</option>
+                        <option value="3">Third Year</option>
+                        <option value="4">Fourth Year</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fee Status</label>
+                    <select
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Statuses</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <div class="relative">
+                        <input type="text" placeholder="Search by name or ID..."
+                            class="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <div class="absolute left-3 top-2.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-200">Apply
+                    Filters</button>
+            </div>
+        </div>
+
+        <!-- Student List -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h2 class="text-lg font-semibold">Student Fee Records</h2>
+                <div class="flex space-x-2">
+                    <button id="viewFeeStructureBtn"
+                        class="flex items-center text-sm text-indigo-600 hover:text-indigo-800 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        View Fee Structure
+                    </button>
+                    <button class="flex items-center text-sm text-gray-600 hover:text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export
+                    </button>
+                    <button class="flex items-center text-sm text-gray-600 hover:text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Print
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Student ID
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Department
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Year
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Total Fee
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Paid Amount
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Balance
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Due Date
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                CS-2023-001
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-semibold">
+                                        JD
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">John Doe</div>
+                                        <div class="text-sm text-gray-500">johndoe@university.edu</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Computer Science
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Second Year
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $8,500
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $8,500
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $0
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-paid">
+                                    Paid
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Sep 15, 2023
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-3 view-details"
+                                    data-student="John Doe" data-id="CS-2023-001"
+                                    data-dept="Computer Science">View</button>
+                                <button class="text-gray-600 hover:text-gray-900">Receipt</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                ENG-2023-042
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-800 font-semibold">
+                                        JS
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">Jane Smith</div>
+                                        <div class="text-sm text-gray-500">janesmith@university.edu</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Engineering
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Third Year
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $9,200
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $4,600
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $4,600
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-pending">
+                                    Pending
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Oct 5, 2023
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-3 view-details"
+                                    data-student="Jane Smith" data-id="ENG-2023-042"
+                                    data-dept="Engineering">View</button>
+                                <button class="text-gray-600 hover:text-gray-900">Receipt</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                BUS-2023-118
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-800 font-semibold">
+                                        RJ
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">Robert Johnson</div>
+                                        <div class="text-sm text-gray-500">robertj@university.edu</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Business
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Fourth Year
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $7,800
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $0
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $7,800
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-overdue">
+                                    Overdue
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Aug 30, 2023
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-3 view-details"
+                                    data-student="Robert Johnson" data-id="BUS-2023-118"
+                                    data-dept="Business">View</button>
+                                <button class="text-gray-600 hover:text-gray-900">Receipt</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                MED-2023-076
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 font-semibold">
+                                        SW
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">Sarah Williams</div>
+                                        <div class="text-sm text-gray-500">sarahw@university.edu</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Medical Sciences
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                First Year
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $12,500
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $6,250
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $6,250
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-pending">
+                                    Pending
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Oct 15, 2023
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-3 view-details"
+                                    data-student="Sarah Williams" data-id="MED-2023-076"
+                                    data-dept="Medical Sciences">View</button>
+                                <button class="text-gray-600 hover:text-gray-900">Receipt</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                ART-2023-205
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-800 font-semibold">
+                                        MB
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">Michael Brown</div>
+                                        <div class="text-sm text-gray-500">michaelb@university.edu</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Arts & Humanities
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Second Year
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $7,200
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $7,200
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $0
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-paid">
+                                    Paid
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                Sep 20, 2023
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-3 view-details"
+                                    data-student="Michael Brown" data-id="ART-2023-205"
+                                    data-dept="Arts & Humanities">View</button>
+                                <button class="text-gray-600 hover:text-gray-900">Receipt</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <a href="#"
+                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </a>
+                        <a href="#"
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </a>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of
+                                <span class="font-medium">125</span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                                aria-label="Pagination">
+                                <a href="#"
+                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                        fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                                <a href="#" aria-current="page"
+                                    class="z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    1
+                                </a>
+                                <a href="#"
+                                    class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    2
+                                </a>
+                                <a href="#"
+                                    class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    3
+                                </a>
+                                <span
+                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    ...
+                                </span>
+                                <a href="#"
+                                    class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    8
+                                </a>
+                                <a href="#"
+                                    class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    9
+                                </a>
+                                <a href="#"
+                                    class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    10
+                                </a>
+                                <a href="#"
+                                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Next</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                        fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2023 University Fee Portal. All rights reserved.</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-300 hover:text-white text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-300 hover:text-white text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-300 hover:text-white text-sm">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Fee Structure Modal -->
+    <div id="feeStructureModal" class="modal">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">University Fee Structure</h2>
+                    <button id="closeFeeStructureModal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-700">Department Fee Structure</h3>
+                        <select id="departmentSelect"
+                            class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="all">All Departments</option>
+                            <option value="cs">Computer Science</option>
+                            <option value="eng">Engineering</option>
+                            <option value="bus">Business</option>
+                            <option value="arts">Arts & Humanities</option>
+                            <option value="med">Medical Sciences</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-indigo-700 mb-2">Computer Science</h4>
+                                <div class="space-y-2">
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Tuition Fee (per semester)</span>
+                                        <span class="font-medium">$3,500</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Lab Fee</span>
+                                        <span class="font-medium">$800</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Technology Fee</span>
+                                        <span class="font-medium">$450</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between font-semibold text-indigo-800">
+                                        <span>Total (per year)</span>
+                                        <span>$8,500</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-indigo-700 mb-2">Engineering</h4>
+                                <div class="space-y-2">
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Tuition Fee (per semester)</span>
+                                        <span class="font-medium">$3,800</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Lab Fee</span>
+                                        <span class="font-medium">$950</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Equipment Fee</span>
+                                        <span class="font-medium">$650</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between font-semibold text-indigo-800">
+                                        <span>Total (per year)</span>
+                                        <span>$9,200</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-indigo-700 mb-2">Business</h4>
+                                <div class="space-y-2">
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Tuition Fee (per semester)</span>
+                                        <span class="font-medium">$3,200</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Resource Fee</span>
+                                        <span class="font-medium">$700</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Case Study Access</span>
+                                        <span class="font-medium">$500</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between font-semibold text-indigo-800">
+                                        <span>Total (per year)</span>
+                                        <span>$7,800</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-indigo-700 mb-2">Medical Sciences</h4>
+                                <div class="space-y-2">
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Tuition Fee (per semester)</span>
+                                        <span class="font-medium">$5,200</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Lab Fee</span>
+                                        <span class="font-medium">$1,200</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between">
+                                        <span>Clinical Training</span>
+                                        <span class="font-medium">$900</span>
+                                    </div>
+                                    <div class="fee-item p-2 flex justify-between font-semibold text-indigo-800">
+                                        <span>Total (per year)</span>
+                                        <span>$12,500</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h4 class="font-semibold text-indigo-700 mb-2">Arts & Humanities</h4>
+                            <div class="space-y-2 max-w-md">
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Tuition Fee (per semester)</span>
+                                    <span class="font-medium">$3,000</span>
+                                </div>
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Materials Fee</span>
+                                    <span class="font-medium">$600</span>
+                                </div>
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Studio Access</span>
+                                    <span class="font-medium">$300</span>
+                                </div>
+                                <div class="fee-item p-2 flex justify-between font-semibold text-indigo-800">
+                                    <span>Total (per year)</span>
+                                    <span>$7,200</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Additional Fees (All Departments)</h3>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Registration Fee</span>
+                                    <span class="font-medium">$250</span>
+                                </div>
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Student Activity Fee</span>
+                                    <span class="font-medium">$180</span>
+                                </div>
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Health Services</span>
+                                    <span class="font-medium">$320</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Library Access</span>
+                                    <span class="font-medium">$150</span>
+                                </div>
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Technology Infrastructure</span>
+                                    <span class="font-medium">$200</span>
+                                </div>
+                                <div class="fee-item p-2 flex justify-between">
+                                    <span>Campus Maintenance</span>
+                                    <span class="font-medium">$120</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-sm text-gray-500">
+                    <p>* All fees are subject to change based on university policy.</p>
+                    <p>* Payment plans are available. Contact the finance office for details.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Fee Details Modal -->
+    <div id="studentFeeModal" class="modal">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Student Fee Details</h2>
+                    <button id="closeStudentFeeModal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <div id="studentAvatar"
+                            class="h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-semibold text-xl">
+                            JD
+                        </div>
+                        <div class="ml-4">
+                            <h3 id="studentName" class="text-lg font-semibold">John Doe</h3>
+                            <p id="studentId" class="text-gray-600">CS-2023-001</p>
+                            <p id="studentDept" class="text-gray-600">Computer Science, Second Year</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Fee Breakdown</h3>
+
+                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Fee Type
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Due Date
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="feeBreakdownBody">
+                                <!-- Fee items will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Payment History</h3>
+
+                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Payment Method
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Receipt No.
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="paymentHistoryBody">
+                                <!-- Payment history will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Total Fee: <span id="totalFeeAmount"
+                                class="text-indigo-700">$8,500</span></h4>
+                        <h4 class="font-semibold text-gray-700">Amount Paid: <span id="amountPaid"
+                                class="text-green-600">$8,500</span></h4>
+                        <h4 class="font-semibold text-gray-700">Balance: <span id="balanceAmount"
+                                class="text-red-600">$0</span></h4>
+                    </div>
+                    <div>
+                        <button
+                            class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-200">
+                            Print Statement
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fee structure data
+        const feeStructureData = {
+            "cs": {
+                name: "Computer Science",
+                tuition: 3500,
+                lab: 800,
+                tech: 450,
+                total: 8500
+            },
+            "eng": {
+                name: "Engineering",
+                tuition: 3800,
+                lab: 950,
+                equipment: 650,
+                total: 9200
+            },
+            "bus": {
+                name: "Business",
+                tuition: 3200,
+                resource: 700,
+                caseStudy: 500,
+                total: 7800
+            },
+            "med": {
+                name: "Medical Sciences",
+                tuition: 5200,
+                lab: 1200,
+                clinical: 900,
+                total: 12500
+            },
+            "arts": {
+                name: "Arts & Humanities",
+                tuition: 3000,
+                materials: 600,
+                studio: 300,
+                total: 7200
+            }
+        };
+
+        // Student fee data
+        const studentFeeData = {
+            "CS-2023-001": {
+                name: "John Doe",
+                dept: "Computer Science",
+                year: "Second Year",
+                avatar: "JD",
+                avatarBg: "bg-indigo-100",
+                avatarText: "text-indigo-800",
+                totalFee: 8500,
+                paidAmount: 8500,
+                balance: 0,
+                status: "Paid",
+                dueDate: "Sep 15, 2023",
+                feeBreakdown: [
+                    { type: "Tuition Fee (Fall)", amount: 3500, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Tuition Fee (Spring)", amount: 3500, status: "Paid", dueDate: "Jan 15, 2024" },
+                    { type: "Lab Fee", amount: 800, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Technology Fee", amount: 450, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Registration Fee", amount: 250, status: "Paid", dueDate: "Aug 15, 2023" }
+                ],
+                paymentHistory: [
+                    { date: "Aug 10, 2023", amount: 5000, method: "Bank Transfer", receipt: "REC-2023-4501" },
+                    { date: "Jan 05, 2023", amount: 3500, method: "Credit Card", receipt: "REC-2023-6723" }
+                ]
+            },
+            "ENG-2023-042": {
+                name: "Jane Smith",
+                dept: "Engineering",
+                year: "Third Year",
+                avatar: "JS",
+                avatarBg: "bg-pink-100",
+                avatarText: "text-pink-800",
+                totalFee: 9200,
+                paidAmount: 4600,
+                balance: 4600,
+                status: "Pending",
+                dueDate: "Oct 5, 2023",
+                feeBreakdown: [
+                    { type: "Tuition Fee (Fall)", amount: 3800, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Tuition Fee (Spring)", amount: 3800, status: "Pending", dueDate: "Jan 15, 2024" },
+                    { type: "Lab Fee", amount: 950, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Equipment Fee", amount: 650, status: "Pending", dueDate: "Aug 15, 2023" }
+                ],
+                paymentHistory: [
+                    { date: "Aug 12, 2023", amount: 4600, method: "Bank Transfer", receipt: "REC-2023-4587" }
+                ]
+            },
+            "BUS-2023-118": {
+                name: "Robert Johnson",
+                dept: "Business",
+                year: "Fourth Year",
+                avatar: "RJ",
+                avatarBg: "bg-green-100",
+                avatarText: "text-green-800",
+                totalFee: 7800,
+                paidAmount: 0,
+                balance: 7800,
+                status: "Overdue",
+                dueDate: "Aug 30, 2023",
+                feeBreakdown: [
+                    { type: "Tuition Fee (Fall)", amount: 3200, status: "Overdue", dueDate: "Aug 15, 2023" },
+                    { type: "Tuition Fee (Spring)", amount: 3200, status: "Pending", dueDate: "Jan 15, 2024" },
+                    { type: "Resource Fee", amount: 700, status: "Overdue", dueDate: "Aug 15, 2023" },
+                    { type: "Case Study Access", amount: 500, status: "Overdue", dueDate: "Aug 15, 2023" },
+                    { type: "Registration Fee", amount: 200, status: "Overdue", dueDate: "Aug 15, 2023" }
+                ],
+                paymentHistory: []
+            },
+            "MED-2023-076": {
+                name: "Sarah Williams",
+                dept: "Medical Sciences",
+                year: "First Year",
+                avatar: "SW",
+                avatarBg: "bg-purple-100",
+                avatarText: "text-purple-800",
+                totalFee: 12500,
+                paidAmount: 6250,
+                balance: 6250,
+                status: "Pending",
+                dueDate: "Oct 15, 2023",
+                feeBreakdown: [
+                    { type: "Tuition Fee (Fall)", amount: 5200, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Tuition Fee (Spring)", amount: 5200, status: "Pending", dueDate: "Jan 15, 2024" },
+                    { type: "Lab Fee", amount: 1200, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Clinical Training", amount: 900, status: "Pending", dueDate: "Oct 15, 2023" }
+                ],
+                paymentHistory: [
+                    { date: "Aug 05, 2023", amount: 6250, method: "Credit Card", receipt: "REC-2023-4123" }
+                ]
+            },
+            "ART-2023-205": {
+                name: "Michael Brown",
+                dept: "Arts & Humanities",
+                year: "Second Year",
+                avatar: "MB",
+                avatarBg: "bg-yellow-100",
+                avatarText: "text-yellow-800",
+                totalFee: 7200,
+                paidAmount: 7200,
+                balance: 0,
+                status: "Paid",
+                dueDate: "Sep 20, 2023",
+                feeBreakdown: [
+                    { type: "Tuition Fee (Fall)", amount: 3000, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Tuition Fee (Spring)", amount: 3000, status: "Paid", dueDate: "Jan 15, 2024" },
+                    { type: "Materials Fee", amount: 600, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Studio Access", amount: 300, status: "Paid", dueDate: "Aug 15, 2023" },
+                    { type: "Registration Fee", amount: 300, status: "Paid", dueDate: "Aug 15, 2023" }
+                ],
+                paymentHistory: [
+                    { date: "Aug 01, 2023", amount: 4200, method: "Bank Transfer", receipt: "REC-2023-3987" },
+                    { date: "Aug 15, 2023", amount: 3000, method: "Credit Card", receipt: "REC-2023-4056" }
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Fee Structure Modal
+            const feeStructureModal = document.getElementById('feeStructureModal');
+            const viewFeeStructureBtn = document.getElementById('viewFeeStructureBtn');
+            const closeFeeStructureModal = document.getElementById('closeFeeStructureModal');
+
+            viewFeeStructureBtn.addEventListener('click', function () {
+                feeStructureModal.style.display = 'block';
+            });
+
+            closeFeeStructureModal.addEventListener('click', function () {
+                feeStructureModal.style.display = 'none';
+            });
+
+            // Student Fee Details Modal
+            const studentFeeModal = document.getElementById('studentFeeModal');
+            const closeStudentFeeModal = document.getElementById('closeStudentFeeModal');
+            const viewButtons = document.querySelectorAll('.view-details');
+
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const studentId = this.getAttribute('data-id');
+                    const studentData = studentFeeData[studentId];
+
+                    if (studentData) {
+                        // Update student info
+                        document.getElementById('studentName').textContent = studentData.name;
+                        document.getElementById('studentId').textContent = studentId;
+                        document.getElementById('studentDept').textContent = `${studentData.dept}, ${studentData.year}`;
+                        document.getElementById('studentAvatar').textContent = studentData.avatar;
+                        document.getElementById('studentAvatar').className = `h-16 w-16 rounded-full ${studentData.avatarBg} flex items-center justify-center ${studentData.avatarText} font-semibold text-xl`;
+
+                        // Update fee summary
+                        document.getElementById('totalFeeAmount').textContent = `$${studentData.totalFee}`;
+                        document.getElementById('amountPaid').textContent = `$${studentData.paidAmount}`;
+                        document.getElementById('balanceAmount').textContent = `$${studentData.balance}`;
+
+                        // Update fee breakdown table
+                        const feeBreakdownBody = document.getElementById('feeBreakdownBody');
+                        feeBreakdownBody.innerHTML = '';
+
+                        studentData.feeBreakdown.forEach(fee => {
+                            let statusClass = '';
+                            if (fee.status === 'Paid') statusClass = 'status-paid';
+                            else if (fee.status === 'Pending') statusClass = 'status-pending';
+                            else if (fee.status === 'Overdue') statusClass = 'status-overdue';
+
+                            const row = `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.type}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${fee.amount}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                            ${fee.status}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${fee.dueDate}</td>
+                                </tr>
+                            `;
+                            feeBreakdownBody.innerHTML += row;
+                        });
+
+                        // Update payment history table
+                        const paymentHistoryBody = document.getElementById('paymentHistoryBody');
+                        paymentHistoryBody.innerHTML = '';
+
+                        if (studentData.paymentHistory.length > 0) {
+                            studentData.paymentHistory.forEach(payment => {
+                                const row = `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.date}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${payment.amount}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.method}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.receipt}</td>
+                                    </tr>
+                                `;
+                                paymentHistoryBody.innerHTML += row;
+                            });
+                        } else {
+                            paymentHistoryBody.innerHTML = `
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No payment records found</td>
+                                </tr>
+                            `;
+                        }
+
+                        studentFeeModal.style.display = 'block';
+                    }
+                });
+            });
+
+            closeStudentFeeModal.addEventListener('click', function () {
+                studentFeeModal.style.display = 'none';
+            });
+
+            // Department filter in fee structure modal
+            const departmentSelect = document.getElementById('departmentSelect');
+            departmentSelect.addEventListener('change', function () {
+                const selectedDept = this.value;
+                // This would filter the fee structure display based on department
+                alert(`Filtering for ${selectedDept === 'all' ? 'all departments' : selectedDept}`);
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function (event) {
+                if (event.target === feeStructureModal) {
+                    feeStructureModal.style.display = 'none';
+                }
+                if (event.target === studentFeeModal) {
+                    studentFeeModal.style.display = 'none';
+                }
+            });
+
+            // Add event listeners for filter buttons
+            document.querySelector('button.bg-indigo-600').addEventListener('click', function () {
+                alert('Filters applied! This would update the student list in a real application.');
+            });
+
+            // Add event listeners for receipt buttons
+            const receiptButtons = document.querySelectorAll('button.text-gray-600');
+            receiptButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const studentRow = this.closest('tr');
+                    const studentName = studentRow.querySelector('.text-sm.font-medium.text-gray-900').textContent.trim();
+                    alert(`Generating receipt for ${studentName}`);
+                });
+            });
+        });
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9651c39ab727dc25',t:'MTc1MzUxMDU0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>

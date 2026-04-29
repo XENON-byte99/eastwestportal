@@ -1,0 +1,662 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Materials — EastWest Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Hide right sidebar on this page to give more room */
+  .right-sidebar { display: none !important; }
+  .portal-layout { grid-template-columns: var(--sidebar-width) 1fr !important; }
+  @media (max-width: 768px) {
+    .portal-layout { grid-template-columns: 1fr !important; }
+  }
+
+  .browse-panel {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+
+  .type-tab { padding: 8px 16px; border-radius: 40px; border: 1px solid #e2e8f0; background: white; font-size: .82rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .type-tab:hover { border-color: var(--primary); color: var(--primary); }
+  .type-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  @media (max-width: 576px) {
+    .type-tab .tab-label { display: none; }
+    .type-tab { padding: 8px 12px; }
+  }
+
+  .material-card {
+    border-radius: 14px;
+    background: white;
+    border: 1px solid rgba(0,0,0,0.06);
+    padding: 20px;
+    transition: all 0.25s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .material-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    border-color: rgba(79, 70, 229, 0.25);
+  }
+
+  .icon-box-small { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: var(--primary); }
+
+  .attach-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    color: var(--text-main);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .attach-chip:hover { background: #eef2ff; border-color: var(--primary); color: var(--primary); }
+  .attach-chip i { font-size: 0.75rem; }
+
+  @media (max-width: 576px) {
+    .upload-btn-text { display: none; }
+    .premium-btn { 
+      width: 42px; 
+      height: 42px; 
+      padding: 0 !important; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      border-radius: 12px !important;
+      flex-shrink: 0;
+    }
+    .premium-btn i { margin: 0 !important; font-size: 1.1rem; }
+  }
+</style>
+
+
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+            <i class="fas fa-book-open"></i>
+        </div>
+        <div style="min-width: 0;">
+            <h4 class="fw-bold mb-0 text-truncate" style="font-size: 1.25rem;">Academic Materials</h4>
+            <p class="text-muted mb-0 small text-truncate">Resource library for students and faculty</p>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+        <button id="search-filter-toggle" class="btn btn-light shadow-sm d-flex align-items-center justify-content-center border-0" 
+                style="width: 42px; height: 42px; border-radius: 12px; background: #fff; flex-shrink: 0;">
+            <i class="fas fa-filter text-muted"></i>
+        </button>
+        <button class="premium-btn d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#uploadMaterialModal">
+            <i class="fas fa-upload"></i> <span class="upload-btn-text">Upload Resource</span>
+        </button>
+    </div>
+</div>
+
+<!-- Filter Bar (hidden by default) -->
+<div id="search-filter-bar" class="mb-4" style="display: none;">
+    <div class="card border-0 shadow-sm p-3" style="border-radius: 16px;">
+        <h6 class="fw-bold mb-3 small text-muted text-uppercase"><i class="fas fa-filter me-2"></i>Filter Materials</h6>
+        <div class="row g-3 align-items-end">
+            <div class="col-sm-6 col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Course</label>
+                <select id="browse-course-select" class="form-select form-select-sm border-0 bg-light rounded-3" style="padding: 10px 12px;">
+                    <option value="">Select a course...</option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-3" id="browse-faculty-container" style="display: none;">
+                <label class="form-label small fw-bold text-muted mb-1">Faculty</label>
+                <select id="browse-faculty-select" class="form-select form-select-sm border-0 bg-light rounded-3" style="padding: 10px 12px;">
+                    <option value="">Select a course first</option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Semester</label>
+                <select id="filter-semester" class="form-select form-select-sm border-0 bg-light rounded-3" style="padding: 10px 12px;">
+                    <option value="">Any</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Fall">Fall</option>
+                    <option value="Spring">Spring</option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Year</label>
+                <input type="number" id="filter-year" class="form-control form-control-sm border-0 bg-light rounded-3" placeholder="Any" style="padding: 10px 12px;">
+            </div>
+            <div class="col-12 mt-3 text-end">
+                <button class="btn btn-primary px-4 fw-bold rounded-3" onclick="applySearchFilter()">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Filter Bar -->
+<div id="filter-bar" class="d-flex gap-2 overflow-auto pb-2 mb-3 scrollbar-hidden flex-wrap">
+    <!-- Tabs will be injected here -->
+</div>
+
+<!-- Materials Grid -->
+<div id="materials-grid" class="row g-3">
+    <div class="col-12 text-center py-5">
+        <i class="fas fa-filter fa-3x text-muted mb-3 opacity-25"></i>
+        <h6 class="text-muted">Click the filter icon above to select a course and browse materials</h6>
+    </div>
+</div>
+
+
+<!-- Upload Material Modal -->
+<div class="modal fade" id="uploadMaterialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Upload Academic Resource</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="uploadMaterialForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Course</label>
+                            <select id="modal-select-course" name="course_id" class="form-select rounded-3" required>
+                                <option value="">Select Course...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Faculty Member</label>
+                            <select id="modal-select-faculty" name="faculty_id" class="form-select rounded-3" required>
+                                <option value="">Select Faculty...</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Resource Title</label>
+                            <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Lecture 05: Data Structures" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Resource Type</label>
+                            <select id="modal-select-type" name="type_id" class="form-select rounded-3" required>
+                                <option value="">Select Type...</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Attachments (Files)</label>
+                            <input type="file" name="files" class="form-control rounded-3" multiple>
+                            <div class="form-text small">You can select multiple files (PDFs, Images, etc.).</div>
+                        </div>
+                        <div class="col-12" id="upload-links-container">
+                            <label class="form-label small fw-bold">External Links</label>
+                            <div class="d-flex gap-2 mb-2 link-input-group">
+                                <input type="url" name="links" class="form-control rounded-3" placeholder="https://...">
+                                <button type="button" class="btn btn-light border" onclick="addLinkInput('upload-links-container')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Semester</label>
+                            <select name="semester" class="form-select rounded-3">
+                                <option value="">Select...</option>
+                                <option value="Spring">Spring</option>
+                                <option value="Summer">Summer</option>
+                                <option value="Fall">Fall</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Year</label>
+                            <input type="number" name="year" class="form-control rounded-3" placeholder="e.g. 2024">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Description</label>
+                            <textarea name="description" class="form-control rounded-3" rows="2"></textarea>
+                        </div>
+
+                    </div>
+                </form>
+                <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                    <i class="fas fa-info-circle me-1"></i> 
+                    {% if user.role == 'faculty' %}
+                    Your faculty upload will be **published immediately**.
+                    {% else %}
+                    Student uploads require **admin approval**.
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 p-4">
+                <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="submitMaterial()" class="btn premium-btn px-4">Upload Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Material Modal -->
+<div class="modal fade" id="editMaterialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Edit Academic Resource</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editMaterialForm">
+                    <input type="hidden" name="material_id" id="edit-material-id">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Resource Title</label>
+                            <input type="text" name="title" id="edit-title" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Existing Attachments</label>
+                            <div id="edit-existing-attachments" class="d-flex flex-column gap-2 mb-3">
+                                <!-- Existing attachments injected here -->
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Add More Files</label>
+                            <input type="file" name="files" class="form-control rounded-3" multiple>
+                        </div>
+                        <div class="col-12" id="edit-links-container">
+                            <label class="form-label small fw-bold">Add External Links</label>
+                            <div class="d-flex gap-2 mb-2 link-input-group">
+                                <input type="url" name="links" class="form-control rounded-3" placeholder="https://...">
+                                <button type="button" class="btn btn-light border" onclick="addLinkInput('edit-links-container')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Semester</label>
+                            <select name="semester" id="edit-semester" class="form-select rounded-3">
+                                <option value="">Select...</option>
+                                <option value="Spring">Spring</option>
+                                <option value="Summer">Summer</option>
+                                <option value="Fall">Fall</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Year</label>
+                            <input type="number" name="year" id="edit-year" class="form-control rounded-3">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Description</label>
+                            <textarea name="description" id="edit-description" class="form-control rounded-3" rows="2"></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Order (Sort Position)</label>
+                            <input type="number" name="order" id="edit-order" class="form-control rounded-3">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 p-4">
+                <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="submitUpdate()" class="btn premium-btn px-4">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let selectedCourseId = null;
+  let selectedFacultyId = null;
+  let allMaterials = [];
+  let availableCourses = [];
+  let availableFaculty = [];
+  let availableTypes = [];
+
+  async function loadInitialData() {
+    const res = await fetch('{% url "materials:api_courses" %}');
+    const data = await res.json();
+    availableCourses = data.courses;
+    availableFaculty = data.faculty;
+    availableTypes = data.types;
+    
+    populateModalDropdowns();
+    renderDropdowns();
+  }
+
+  function populateModalDropdowns() {
+    const courseSelect = document.getElementById('modal-select-course');
+    const facultySelect = document.getElementById('modal-select-faculty');
+    const typeSelect = document.getElementById('modal-select-type');
+    
+    courseSelect.innerHTML = '<option value="">Select Course...</option>' + 
+        availableCourses.map(c => `<option value="${c.id}">${c.code} - ${c.name}</option>`).join('');
+        
+    facultySelect.innerHTML = '<option value="">Select Faculty...</option>' + 
+        availableFaculty.map(f => `<option value="${f.id}">${f.full_name}</option>`).join('');
+
+    typeSelect.innerHTML = '<option value="">Select Category...</option>' + 
+        availableTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  }
+
+  function renderDropdowns() {
+      const courseSelect = document.getElementById('browse-course-select');
+      const facultyContainer = document.getElementById('browse-faculty-container');
+      const facultySelect = document.getElementById('browse-faculty-select');
+
+      if (availableCourses.length === 0) {
+          courseSelect.innerHTML = '<option value="">No courses available</option>';
+          courseSelect.disabled = true;
+          return;
+      }
+
+      courseSelect.innerHTML = '<option value="">Select a course...</option>' + 
+          availableCourses.map(c => `<option value="${c.id}">${c.code} - ${c.name}</option>`).join('');
+
+      courseSelect.addEventListener('change', (e) => {
+          const courseId = e.target.value;
+          if (courseId) {
+              facultyContainer.style.display = 'block';
+              facultySelect.innerHTML = '<option value="">Select faculty...</option>' + 
+                  availableFaculty.map(f => `<option value="${f.id}">${f.full_name}</option>`).join('');
+          } else {
+              facultyContainer.style.display = 'none';
+              facultySelect.innerHTML = '<option value="">Select a course first</option>';
+          }
+      });
+  }
+
+  async function selectFaculty(courseId, facultyId) {
+    selectedCourseId = courseId;
+    selectedFacultyId = facultyId;
+
+    const grid = document.getElementById('materials-grid');
+    grid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>';
+
+    const res = await fetch(`{% url "materials:api_materials" %}?course_id=${courseId}&faculty_id=${facultyId}`);
+    const data = await res.json();
+    allMaterials = data.materials;
+    
+    renderTabs();
+    renderMaterials(null); 
+  }
+
+  function renderTabs() {
+    const bar = document.getElementById('filter-bar');
+    
+    bar.innerHTML = `
+        <button class="type-tab active" onclick="filterMaterials(this, null)">
+            <i class="fas fa-layer-group"></i> <span class="tab-label">All</span>
+        </button>
+        ${availableTypes.map(t => {
+            const hasMaterials = allMaterials.some(m => m.type_id === t.id);
+            if (!hasMaterials) return '';
+            return `
+                <button class="type-tab" onclick="filterMaterials(this, ${t.id})">
+                    <i class="fas ${t.icon}"></i> <span class="tab-label">${t.name}</span>
+                </button>
+            `;
+        }).join('')}
+    `;
+
+
+  }
+
+  function filterMaterials(btn, typeId) {
+    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderMaterials(typeId);
+  }
+
+  let currentTypeId = null;
+  let filterSemester = '';
+  let filterYear = '';
+
+  function applySearchFilter() {
+    filterSemester = document.getElementById('filter-semester').value;
+    filterYear = document.getElementById('filter-year').value;
+    const courseId = document.getElementById('browse-course-select').value;
+    const facultyId = document.getElementById('browse-faculty-select').value;
+    
+    document.getElementById('search-filter-bar').style.display = 'none';
+    
+    if (courseId && facultyId) {
+        selectFaculty(courseId, facultyId);
+    } else {
+        alert('Please select both a Course and a Faculty member to browse materials.');
+    }
+  }
+
+  // Toggle search bar
+  document.getElementById('search-filter-toggle').addEventListener('click', () => {
+    const bar = document.getElementById('search-filter-bar');
+    bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+  });
+
+  function renderMaterials(typeId) {
+    currentTypeId = typeId;
+    const grid = document.getElementById('materials-grid');
+    
+    let filtered = typeId ? allMaterials.filter(m => m.type_id === typeId) : allMaterials;
+    
+    if (filterSemester) {
+        filtered = filtered.filter(m => m.semester === filterSemester);
+    }
+    if (filterYear) {
+        filtered = filtered.filter(m => m.year && m.year.toString() === filterYear);
+    }
+
+    
+    if (filtered.length === 0) {
+
+        grid.innerHTML = `<div class="col-12 text-center py-5 text-muted">No resources found in this category.</div>`;
+        return;
+    }
+    grid.innerHTML = filtered.map(m => {
+        const isStaff = "{{ user.is_staff|yesno:'true,false' }}" === "true";
+        const canEdit = m.can_edit;
+        const isApproved = m.is_approved;
+        
+        return `
+        <div class="col-sm-6 col-lg-4">
+            <div class="material-card shadow-sm">
+                <!-- Header -->
+                <div class="d-flex gap-3 align-items-start mb-2">
+                    <div class="icon-box-small">
+                        <i class="fas ${m.type_icon}"></i>
+                    </div>
+                    <div style="min-width: 0; flex: 1;">
+                        <h6 class="fw-bold mb-0 text-truncate" title="${m.title}" style="font-size: 0.9rem;">${m.title}</h6>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            <span class="badge bg-light text-muted border" style="font-size: 0.68rem;">${m.type_name}</span>
+                            ${m.semester ? `<span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 0.68rem;">${m.semester} ${m.year || ''}</span>` : ''}
+                            ${!isApproved ? '<span class="badge bg-warning text-dark" style="font-size: 0.68rem;">PENDING</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <p class="small text-muted flex-grow-1 mb-2" style="font-size: 0.82rem;">${m.description || 'No description provided.'}</p>
+
+                <!-- Action buttons -->
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                    ${isStaff && !isApproved ? `
+                        <button onclick="approveMaterial(${m.id})" class="btn btn-sm btn-success rounded-pill px-2 py-1 text-white" style="font-size: 0.72rem;">
+                            <i class="fas fa-check me-1"></i>Approve
+                        </button>
+                    ` : ''}
+                    ${canEdit ? `
+                        <button onclick="editMaterial(${m.id})" class="btn btn-sm btn-light border rounded-pill px-2 py-1" style="font-size: 0.72rem;">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </button>
+                        <button onclick="deleteMaterial(${m.id})" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" style="font-size: 0.72rem;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
+
+                <!-- Attachments -->
+                <div class="mt-auto pt-2 border-top">
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        ${m.attachments && m.attachments.length > 0 ? m.attachments.map(a => `
+                            <a href="${a.url || '#'}" target="_blank" class="attach-chip">
+                                <i class="fas ${a.is_link ? 'fa-external-link-alt text-primary' : 'fa-file-pdf text-danger'}"></i>
+                                <span class="text-truncate" style="max-width: 110px;">${a.name}</span>
+                            </a>
+                        `).join('') : '<span class="small text-muted fst-italic" style="font-size: 0.78rem;">No attachments</span>'}
+                    </div>
+                    <div class="small text-muted" style="font-size: 0.75rem;"><i class="fas fa-user-circle me-1"></i>${m.uploaded_by}</div>
+                </div>
+            </div>
+        </div>
+    `}).join('');
+}
+
+  async function submitMaterial() {
+    const form = document.getElementById('uploadMaterialForm');
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch('{% url "materials:api_materials" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData
+        });
+        const result = await response.json();
+        if (response.ok) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert(result.error);
+        }
+    } catch (e) { console.error(e); }
+  }
+
+  function editMaterial(id) {
+      const m = allMaterials.find(item => item.id === id);
+      if (!m) return;
+
+      document.getElementById('edit-material-id').value = m.id;
+      document.getElementById('edit-title').value = m.title;
+      document.getElementById('edit-semester').value = m.semester || '';
+      document.getElementById('edit-year').value = m.year || '';
+      document.getElementById('edit-description').value = m.description || '';
+      document.getElementById('edit-order').value = m.order || 1;
+
+      // Populate existing attachments
+      const attachContainer = document.getElementById('edit-existing-attachments');
+      if (m.attachments && m.attachments.length > 0) {
+          attachContainer.innerHTML = m.attachments.map(a => `
+              <div class="d-flex justify-content-between align-items-center p-2 border rounded bg-light" id="attachment-row-${a.id}">
+                  <div class="d-flex align-items-center gap-2 text-truncate">
+                      <i class="fas ${a.is_link ? 'fa-link text-primary' : 'fa-file-alt text-danger'}"></i>
+                      <a href="${a.url}" target="_blank" class="small text-decoration-none text-truncate" style="max-width: 200px;">${a.name}</a>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="deleteAttachment(${a.id})"><i class="fas fa-times"></i></button>
+              </div>
+          `).join('');
+      } else {
+          attachContainer.innerHTML = '<div class="small text-muted">No existing attachments.</div>';
+      }
+
+
+
+      new bootstrap.Modal(document.getElementById('editMaterialModal')).show();
+  }
+
+  async function submitUpdate() {
+      const id = document.getElementById('edit-material-id').value;
+      const form = document.getElementById('editMaterialForm');
+      const formData = new FormData(form);
+
+      try {
+          const response = await fetch(`/materials/api/materials/${id}/`, {
+              method: 'POST',
+              headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+              body: formData
+          });
+          const result = await response.json();
+          if (response.ok) {
+              alert(result.message);
+              location.reload();
+          } else {
+              alert(result.error);
+          }
+      } catch (e) { console.error(e); }
+  }
+
+  async function deleteMaterial(id) {
+      if (!confirm('Are you sure you want to delete this resource?')) return;
+
+      try {
+          const response = await fetch(`/materials/api/materials/${id}/`, {
+              method: 'DELETE',
+              headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+          });
+          if (response.ok) {
+              location.reload();
+          } else {
+              const res = await response.json();
+              alert(res.error);
+          }
+      } catch (e) { console.error(e); }
+  }
+
+  async function approveMaterial(id) {
+      try {
+          const response = await fetch(`/materials/api/materials/${id}/`, {
+              method: 'PATCH',
+              headers: { 
+                  'X-CSRFToken': '{{ csrf_token }}',
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ is_approved: true })
+          });
+          if (response.ok) {
+              alert('Material approved!');
+              location.reload();
+          } else {
+              const res = await response.json();
+              alert(res.error);
+          }
+      } catch (e) { console.error(e); }
+  }
+
+  function addLinkInput(containerId) {
+      const container = document.getElementById(containerId);
+      const div = document.createElement('div');
+      div.className = 'd-flex gap-2 mb-2 link-input-group';
+      div.innerHTML = `
+          <input type="url" name="links" class="form-control rounded-3" placeholder="https://...">
+          <button type="button" class="btn btn-light border" onclick="this.parentElement.remove()"><i class="fas fa-minus text-danger"></i></button>
+      `;
+      container.appendChild(div);
+  }
+
+  async function deleteAttachment(id) {
+      if (!confirm('Are you sure you want to remove this attachment?')) return;
+      try {
+          const response = await fetch(`/materials/api/attachments/${id}/`, {
+              method: 'DELETE',
+              headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+          });
+          if (response.ok) {
+              document.getElementById(`attachment-row-${id}`).remove();
+          } else {
+              const res = await response.json();
+              alert(res.error);
+          }
+      } catch (e) { console.error(e); }
+  }
+
+
+
+  document.addEventListener('DOMContentLoaded', loadInitialData);
+</script>
+{% endblock %}

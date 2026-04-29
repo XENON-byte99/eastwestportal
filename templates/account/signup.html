@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — EastWest Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;min-height:100vh;background:linear-gradient(135deg,#0f172a,#1e1b4b);display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+
+    .card{background:#fff;border-radius:20px;box-shadow:0 32px 80px rgba(0,0,0,.35);max-width:560px;width:100%;overflow:hidden;}
+
+    .card-header{background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px 40px 24px;color:#fff;}
+    .card-header .brand{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+    .brand-icon-sm{width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+    .card-header h1{font-size:1.5rem;font-weight:800;margin-bottom:4px;}
+    .card-header p{font-size:.85rem;opacity:.75;}
+
+    .card-body{padding:32px 40px;}
+
+    label{display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:6px;}
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .input-wrap{position:relative;margin-bottom:16px;}
+    .input-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.82rem;}
+    input[type="email"],input[type="password"],input[type="text"],select{
+      width:100%;padding:11px 12px 11px 36px;border:1.5px solid #e2e8f0;border-radius:9px;
+      font-size:.88rem;font-family:'Inter',sans-serif;color:#0f172a;background:#fff;
+      transition:border-color .2s,box-shadow .2s;outline:none;
+    }
+    select{padding-left:36px;cursor:pointer;}
+    input:focus,select:focus{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12);}
+    .error-list{list-style:none;padding:0;margin-top:4px;}
+    .error-list li{color:#ef4444;font-size:.75rem;}
+
+    .domain-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;
+      font-size:.78rem;color:#1d4ed8;display:flex;align-items:flex-start;gap:8px;margin-bottom:18px;}
+
+    .btn-primary{
+      width:100%;padding:13px;background:linear-gradient(135deg,#4f46e5,#7c3aed);
+      color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;
+      cursor:pointer;transition:opacity .2s;
+    }
+    .btn-primary:hover{opacity:.9;}
+
+    .divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0;}
+    .divider span{font-size:.75rem;color:#94a3b8;font-weight:500;}
+
+    .btn-google{
+      width:100%;padding:11px;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;
+      font-size:.88rem;font-weight:600;color:#374151;display:flex;align-items:center;
+      justify-content:center;gap:10px;cursor:pointer;transition:border-color .2s;text-decoration:none;
+    }
+    .btn-google:hover{border-color:#4f46e5;}
+    .btn-google img{width:18px;height:18px;}
+
+    .signin-link{text-align:center;margin-top:22px;font-size:.82rem;color:#64748b;}
+    .signin-link a{color:#4f46e5;font-weight:600;text-decoration:none;}
+    .signin-link a:hover{text-decoration:underline;}
+
+    .step-info{background:#fafafa;border-radius:10px;padding:14px;margin-bottom:20px;border:1px solid #f1f5f9;}
+    .step-info p{font-size:.8rem;color:#64748b;margin:0;}
+    .step-info strong{color:#374151;}
+
+    /* Non-scrollable on mobile */
+    @media(max-width:560px){
+      .card-body{padding:24px 22px;}
+      .card-header{padding:24px 22px 18px;}
+      .row-2{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="brand">
+        <div class="brand-icon-sm"><i class="fas fa-university" style="color:#fff;font-size:.9rem;"></i></div>
+        <span style="font-weight:700;font-size:.95rem;">EastWest Portal</span>
+      </div>
+      <h1>Create Your Account</h1>
+      <p>Join the EWU academic community platform</p>
+    </div>
+
+    <div class="card-body">
+
+      <div class="step-info">
+        <p><strong>📋 Approval Required</strong><br>After registering, your account will be reviewed by an administrator. You'll gain full access once approved.</p>
+      </div>
+
+      <div class="domain-note">
+        <i class="fas fa-circle-info" style="margin-top:1px;"></i>
+        <span>Only <strong>@ewubd.edu</strong> email addresses are accepted. Use your official university email.</span>
+      </div>
+
+      {% for error in form.non_field_errors %}
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#b91c1c;font-size:.82rem;">
+        <i class="fas fa-circle-exclamation me-2"></i>{{ error }}
+      </div>
+      {% endfor %}
+
+      <form method="post" action="{% url 'account_signup' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Name Row -->
+        <div class="row-2">
+          <div>
+            <label>First Name *</label>
+            <div class="input-wrap">
+              <i class="fas fa-user"></i>
+              <input type="text" name="first_name" placeholder="First name" value="{{ form.first_name.value|default:'' }}" required>
+            </div>
+            {% if form.first_name.errors %}<ul class="error-list">{% for e in form.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div>
+            <label>Last Name *</label>
+            <div class="input-wrap">
+              <i class="fas fa-user"></i>
+              <input type="text" name="last_name" placeholder="Last name" value="{{ form.last_name.value|default:'' }}" required>
+            </div>
+            {% if form.last_name.errors %}<ul class="error-list">{% for e in form.last_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <!-- Email -->
+        <label>University Email *</label>
+        <div class="input-wrap">
+          <i class="fas fa-envelope"></i>
+          <input type="email" name="email" placeholder="your.id@ewubd.edu" value="{{ form.email.value|default:'' }}" autocomplete="email" required>
+        </div>
+        {% if form.email.errors %}<ul class="error-list">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+        <!-- Role & Department -->
+        <div class="row-2">
+          <div>
+            <label>I am a *</label>
+            <div class="input-wrap">
+              <i class="fas fa-id-badge"></i>
+              <select name="role" required>
+                <option value="">Select…</option>
+                <option value="student" {% if form.role.value == 'student' %}selected{% endif %}>Student</option>
+                <option value="faculty" {% if form.role.value == 'faculty' %}selected{% endif %}>Faculty</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label>Student / Faculty ID</label>
+            <div class="input-wrap">
+              <i class="fas fa-fingerprint"></i>
+              <input type="text" name="student_id" placeholder="Optional" value="{{ form.student_id.value|default:'' }}">
+            </div>
+          </div>
+        </div>
+
+        <!-- Department -->
+        <label>Department</label>
+        <div class="input-wrap">
+          <i class="fas fa-building-columns"></i>
+          <input type="text" name="department" placeholder="e.g. Computer Science & Engineering" value="{{ form.department.value|default:'' }}">
+        </div>
+
+        <!-- WhatsApp Number -->
+        <label>WhatsApp Number *</label>
+        <div class="input-wrap">
+          <i class="fab fa-whatsapp"></i>
+          <input type="text" name="whatsapp_number" placeholder="+8801XXXXXXXXX" value="{{ form.whatsapp_number.value|default:'' }}" required>
+        </div>
+        {% if form.whatsapp_number.errors %}<ul class="error-list">{% for e in form.whatsapp_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+        <!-- File Uploads -->
+        <div class="row-2">
+          <div>
+            <label>Image of User *</label>
+            <div class="input-wrap">
+              <i class="fas fa-camera"></i>
+              <input type="file" name="profile_picture" accept="image/*" required style="padding-left: 36px; padding-top: 10px;">
+            </div>
+            {% if form.profile_picture.errors %}<ul class="error-list">{% for e in form.profile_picture.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div>
+            <label>Image of ID Card *</label>
+            <div class="input-wrap">
+              <i class="fas fa-id-card"></i>
+              <input type="file" name="id_card_image" accept="image/*" required style="padding-left: 36px; padding-top: 10px;">
+            </div>
+            {% if form.id_card_image.errors %}<ul class="error-list">{% for e in form.id_card_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="row-2">
+          <div>
+            <label>Password *</label>
+            <div class="input-wrap">
+              <i class="fas fa-lock"></i>
+              <input type="password" name="password1" placeholder="Create password" autocomplete="new-password" required>
+            </div>
+            {% if form.password1.errors %}<ul class="error-list">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div>
+            <label>Confirm Password *</label>
+            <div class="input-wrap">
+              <i class="fas fa-lock"></i>
+              <input type="password" name="password2" placeholder="Confirm password" autocomplete="new-password" required>
+            </div>
+            {% if form.password2.errors %}<ul class="error-list">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-user-plus" style="margin-right:8px;"></i> Create Account
+        </button>
+      </form>
+
+      <div class="divider"><span>OR SIGN UP WITH</span></div>
+
+      <a href="{% url 'google_login' %}" class="btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Continue with Google (@ewubd.edu)
+      </a>
+
+      <div class="signin-link">
+        Already have an account? <a href="{% url 'account_login' %}">Sign in</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

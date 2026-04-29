@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — EastWest Portal</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --primary: hsl(243, 75%, 59%);
+      --primary-hover: hsl(243, 75%, 53%);
+      --accent-pink: hsl(330, 81%, 60%);
+      --accent-cyan: hsl(180, 100%, 45%);
+      --glass-bg: rgba(15, 23, 42, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-highlight: rgba(255, 255, 255, 0.15);
+      --text-main: hsl(210, 40%, 98%);
+      --text-muted: hsl(215, 20%, 65%);
+      --bg-gradient: radial-gradient(circle at 10% 20%, hsl(244, 43%, 12%) 0%, hsl(220, 40%, 4%) 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Animated Background */
+    .bg-blobs {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.4;
+      animation: drift 20s infinite alternate ease-in-out;
+    }
+
+    .blob-1 {
+      top: -10%;
+      left: -10%;
+      width: 50vw;
+      height: 50vw;
+      background: var(--primary);
+    }
+
+    .blob-2 {
+      bottom: -10%;
+      right: -10%;
+      width: 45vw;
+      height: 45vw;
+      background: var(--accent-pink);
+      animation-delay: -5s;
+    }
+
+    .blob-3 {
+      top: 40%;
+      left: 50%;
+      width: 30vw;
+      height: 30vw;
+      background: var(--accent-cyan);
+      animation-delay: -10s;
+    }
+
+    @keyframes drift {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(5%, 10%) scale(1.1); }
+    }
+
+    /* Glass Container */
+    .glass-container {
+      width: 100%;
+      max-width: 960px;
+      margin: 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      display: flex;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      z-index: 10;
+      position: relative;
+    }
+
+    /* Form Panel (Left) */
+    .panel-form {
+      flex: 1.1;
+      padding: 50px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--accent-pink));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .brand-name {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      background: linear-gradient(to right, #fff, hsl(210, 40%, 80%));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+    }
+
+    .domain-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59, 130, 246, 0.15);
+      color: hsl(213, 94%, 68%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      color: hsl(0, 86%, 70%);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: hsl(150, 86%, 70%);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    /* Form Elements */
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-wrap i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.25);
+    }
+
+    input:focus + i {
+      color: var(--primary);
+    }
+
+    .forgot {
+      text-align: right;
+      margin-bottom: 24px;
+    }
+
+    .forgot a {
+      font-size: 0.8rem;
+      color: hsl(243, 75%, 70%);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .forgot a:hover {
+      color: var(--primary-hover);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+      opacity: 0.95;
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--glass-border);
+    }
+
+    .divider span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-google {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-google:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-google img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .signup-link {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .signup-link a {
+      color: hsl(243, 75%, 75%);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .signup-link a:hover {
+      color: var(--text-main);
+      text-decoration: underline;
+    }
+
+    /* Info Panel (Right) */
+    .panel-info {
+      flex: 0.9;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.05) 100%);
+      padding: 50px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 1px solid var(--glass-border);
+      position: relative;
+    }
+
+    .panel-info::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .info-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .info-icon {
+      font-size: 3rem;
+      margin-bottom: 24px;
+      display: inline-block;
+      animation: pulse 2s infinite ease-in-out alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
+      100% { transform: scale(1.05); filter: drop-shadow(0 0 8px rgba(255,255,255,0.4)); }
+    }
+
+    .panel-info h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .panel-info p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .features {
+      display: grid;
+      gap: 20px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    .feature-text strong {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .feature-text span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 850px) {
+      .glass-container {
+        flex-direction: column;
+        max-width: 480px;
+      }
+      .panel-info {
+        display: none;
+      }
+      .panel-form {
+        padding: 40px 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="glass-container">
+    
+    <!-- Left: Form -->
+    <div class="panel-form">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fas fa-university" style="color:#fff;font-size:1.2rem;"></i>
+        </div>
+        <div>
+          <div class="brand-name">EastWest Portal</div>
+          <div class="brand-sub">University Community Platform</div>
+        </div>
+      </div>
+
+      <h1>Welcome back</h1>
+      <p class="subtitle">Sign in to your EWU account to continue</p>
+
+      <div class="domain-badge">
+        <i class="fas fa-shield-halved"></i>
+        @ewubd.edu accounts only
+      </div>
+
+      <!-- Messages Loop -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            <i class="fas fa-circle-info"></i> <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Form Errors -->
+      {% if form.errors %}
+        <div class="alert alert-error">
+          <i class="fas fa-circle-exclamation"></i>
+          <span>Invalid email or password. Please try again.</span>
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+
+        <label for="id_login">Email Address</label>
+        <div class="input-wrap">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="id_login" name="login" placeholder="you@ewubd.edu"
+                 value="{{ form.login.value|default:'' }}" autocomplete="email" required>
+        </div>
+
+        <label for="id_password">Password</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="id_password" name="password" placeholder="Your password" autocomplete="current-password" required>
+        </div>
+
+        <div class="forgot">
+          <a href="{% url 'account_reset_password' %}">Forgot password?</a>
+        </div>
+
+        <input type="hidden" name="remember" value="True">
+        <button type="submit" class="btn-primary">
+          Sign In <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <a href="{% url 'google_login' %}" class="btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+        <span>Continue with Google</span>
+      </a>
+
+      <div class="signup-link">
+        Don't have an account? <a href="{% url 'account_signup' %}">Create one</a>
+      </div>
+    </div>
+
+    <!-- Right: Info Panel -->
+    <div class="panel-info">
+      <div class="info-content">
+        <span class="info-icon">🎓</span>
+        <h2>Your Campus, One Platform</h2>
+        <p>Connect with your EWU community — share updates, access academic resources, discover research, and trade within campus.</p>
+        
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">
+              <i class="fas fa-rss" style="color:hsl(265, 89%, 78%);"></i>
+            </div>
+            <div class="feature-text">
+              <strong>Social Feed</strong>
+              <span>Campus updates & community posts</span>
+            </div>
+          </div>
+          
+          <div class="feature">
+            <div class="feature-icon">
+              <i class="fas fa-book-open" style="color:hsl(199, 89%, 68%);"></i>
+            </div>
+            <div class="feature-text">
+              <strong>Academic Materials</strong>
+              <span>PDFs, videos, slides by course</span>
+            </div>
+          </div>
+          
+          <div class="feature">
+            <div class="feature-icon">
+              <i class="fas fa-store" style="color:hsl(327, 73%, 75%);"></i>
+            </div>
+            <div class="feature-text">
+              <strong>Marketplace</strong>
+              <span>Buy, sell, exchange on campus</span>
+            </div>
+          </div>
+          
+          <div class="feature">
+            <div class="feature-icon">
+              <i class="fas fa-flask" style="color:hsl(142, 71%, 73%);"></i>
+            </div>
+            <div class="feature-text">
+              <strong>Research & Capstone</strong>
+              <span>Explore faculty research & final projects</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

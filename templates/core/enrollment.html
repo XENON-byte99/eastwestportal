@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Course Enrollment — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: 24px; background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
+                <div class="text-center mb-5">
+                    <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; border-radius: 20px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; font-size: 2rem;">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark">Course Enrollment</h2>
+                    <p class="text-muted">Select the courses you are attending in <strong>{{ current_semester }} {{ current_year }}</strong></p>
+                </div>
+
+                <form method="POST" id="enrollmentForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3 mb-5">
+                        {% for course in courses %}
+                        <div class="col-md-6">
+                            <label class="enrollment-card h-100 w-100">
+                                <input type="checkbox" name="courses" value="{{ course.id }}" class="d-none" {% if course.id in user_enrollments %}checked{% endif %}>
+                                <div class="card-content p-3 border rounded-4 d-flex align-items-center gap-3 transition-all cursor-pointer">
+                                    <div class="check-indicator">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div style="min-width: 0;">
+                                        <h6 class="fw-bold mb-0 text-truncate" style="font-size: 0.95rem;">{{ course.code }}</h6>
+                                        <small class="text-muted text-truncate d-block">{{ course.name }}</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <p class="text-muted">No courses available for enrollment at this time.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        <button type="submit" class="btn premium-btn py-3 fw-bold rounded-pill shadow-sm" style="font-size: 1.1rem;">
+                            Save Enrollment & Continue
+                        </button>
+                        <p class="small text-center text-muted">
+                            <i class="fas fa-info-circle me-1"></i> Your feed and notifications will be personalized based on these selections.
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .enrollment-card input:checked + .card-content {
+        border-color: #4f46e5 !important;
+        background-color: rgba(79, 70, 229, 0.04);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+    }
+    
+    .enrollment-card .card-content {
+        transition: all 0.2s ease;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .enrollment-card .card-content:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    .check-indicator {
+        width: 24px;
+        height: 24px;
+        color: #e2e8f0;
+        font-size: 1.2rem;
+        transition: color 0.2s;
+    }
+
+    .enrollment-card input:checked + .card-content .check-indicator {
+        color: #4f46e5;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

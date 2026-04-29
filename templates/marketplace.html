@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Marketplace</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="/_sdk/element_sdk.js"></script>
+    <script src="/_sdk/data_sdk.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .listing-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-body {
+            padding: 12px;
+        }
+
+        .price-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .condition-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: overlayFadeIn 0.3s ease;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 90%;
+            max-height: 90%;
+            width: 600px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-bubble {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body class="h-full overflow-auto" style="background-color: #f9fafb;">
+    <div id="app-wrapper" class="h-full w-full overflow-auto" style="background-color: #f9fafb;"><!-- Header -->
+        <header class="sticky top-0 z-50 backdrop-blur-lg border-b"
+            style="background: rgba(249,250,251,0.9); border-color: #e5e7eb;">
+            <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i
+                            data-lucide="shopping-bag" style="width:20px;height:20px;color:#fff;"></i>
+                    </div>
+                    <h1 id="shop-title" class="text-2xl font-bold"
+                        style="font-family:'Poppins',sans-serif; color:#1f2937;">Community Marketplace</h1>
+                </div><button id="post-btn"
+                    style="padding:10px 20px;border-radius:8px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;">
+                    <i data-lucide="plus" style="width:16px;height:16px;"></i> Post for Sale </button>
+            </div>
+        </header><!-- Filters -->
+        <div class="max-w-6xl mx-auto px-6 py-4 flex gap-3 flex-wrap sticky top-16 z-40 backdrop-blur-sm"
+            style="background: rgba(249,250,251,0.95);"><button class="filter-btn active" data-filter="all"
+                style="padding:8px 16px;border-radius:6px;background:#667eea;color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:600;">All</button>
+            <button class="filter-btn" data-filter="buy"
+                style="padding:8px 16px;border-radius:6px;background:#e5e7eb;color:#6b7280;border:none;cursor:pointer;font-size:13px;font-weight:600;">Buy</button>
+            <button class="filter-btn" data-filter="sell"
+                style="padding:8px 16px;border-radius:6px;background:#e5e7eb;color:#6b7280;border:none;cursor:pointer;font-size:13px;font-weight:600;">Sell</button>
+            <button class="filter-btn" data-filter="exchange"
+                style="padding:8px 16px;border-radius:6px;background:#e5e7eb;color:#6b7280;border:none;cursor:pointer;font-size:13px;font-weight:600;">Exchange</button>
+        </div><!-- Main Content -->
+        <main class="max-w-6xl mx-auto px-6 py-6"><!-- Empty State -->
+            <div id="empty-state" class="text-center py-20">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+                    style="background: #f3f4f6;"><i data-lucide="inbox"
+                        style="width:32px;height:32px;color:#9ca3af;"></i>
+                </div>
+                <p class="text-sm" style="color: #6b7280;" id="empty-message">No items available</p>
+            </div><!-- Listings Grid -->
+            <div id="listings-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </main>
+    </div><!-- Post Listing Modal -->
+    <div id="post-modal" class="hidden modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 style="color: #1f2937; font-weight: 700;">Post a New Listing</h3><button id="post-close"
+                    class="modal-close" style="color: #6b7280;"> <i data-lucide="x" style="width:20px;height:20px;"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="post-form">
+                    <div class="form-group"><label class="form-label">Item Name *</label> <input type="text"
+                            id="item-name" class="form-input" placeholder="e.g., Vintage Bike" required>
+                    </div>
+                    <div class="form-group"><label class="form-label">Listing Type *</label> <select id="listing-type"
+                            class="form-select" required>
+                            <option value="">Select type...</option>
+                            <option value="buy">Buy</option>
+                            <option value="sell">Sell</option>
+                            <option value="exchange">Exchange</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="price-group"><label class="form-label">Price *</label> <input
+                            type="number" id="price" class="form-input" placeholder="0" min="0" required>
+                    </div>
+                    <div class="form-group"><label class="form-label">Condition *</label> <select id="condition"
+                            class="form-select" required>
+                            <option value="">Select condition...</option>
+                            <option value="like-new">Like New</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="needs-repair">Needs Repair</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">Description</label> <textarea id="description"
+                            class="form-textarea" placeholder="Describe your item..."></textarea>
+                    </div>
+                    <div class="form-group"><label class="form-label">Your Name *</label> <input type="text"
+                            id="seller-name" class="form-input" placeholder="Your name" required>
+                    </div>
+                    <div class="form-group"><label class="form-label">Contact (Phone/Email) *</label> <input type="text"
+                            id="seller-contact" class="form-input" placeholder="Your contact info" required>
+                    </div>
+                    <div style="display:flex;gap:8px;"><button type="submit" id="submit-btn"
+                            style="flex:1;padding:10px;border-radius:8px;background:#667eea;color:#fff;border:none;cursor:pointer;font-weight:600;">Post
+                            Listing</button> <button type="button" id="post-cancel"
+                            style="flex:1;padding:10px;border-radius:8px;background:#e5e7eb;color:#6b7280;border:none;cursor:pointer;font-weight:600;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div><!-- Listing Details Modal -->
+    <div id="detail-modal" class="hidden modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="detail-title" style="color: #1f2937; font-weight: 700;"></h3><button id="detail-close"
+                    class="modal-close" style="color: #6b7280;"> <i data-lucide="x" style="width:20px;height:20px;"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="detail-content"></div>
+            </div>
+        </div>
+    </div><!-- Chat Modal -->
+    <div id="chat-modal" class="hidden modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 style="color: #1f2937; font-weight: 700;">Contact <span id="chat-seller"></span></h3><button
+                    id="chat-close" class="modal-close" style="color: #6b7280;"> <i data-lucide="x"
+                        style="width:20px;height:20px;"></i> </button>
+            </div>
+            <div class="modal-body" style="display:flex;flex-direction:column;">
+                <div id="chat-messages" style="flex:1;overflow-y:auto;margin-bottom:12px;"></div>
+                <form id="chat-form" style="display:flex;gap:8px;align-items:flex-end;"><input type="text"
+                        id="chat-input" class="form-input" placeholder="Type message..." style="flex:1;"> <button
+                        type="submit"
+                        style="padding:8px 16px;background:#667eea;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">
+                        <i data-lucide="send" style="width:16px;height:16px;"></i> </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        let allListings = [];
+        let currentFilter = 'all';
+        let selectedListing = null;
+        let chatMessages = [];
+
+        const defaultConfig = {
+            shop_title: 'Community Marketplace',
+            empty_message: 'No items available',
+            background_color: '#f9fafb',
+            surface_color: '#ffffff',
+            text_color: '#1f2937',
+            primary_color: '#667eea',
+            secondary_color: '#6b7280',
+            font_family: 'Poppins',
+            font_size: 14
+        };
+
+        // Element SDK
+        window.elementSdk.init({
+            defaultConfig,
+            onConfigChange: async (config) => {
+                const bg = config.background_color || defaultConfig.background_color;
+                const text = config.text_color || defaultConfig.text_color;
+                document.body.style.backgroundColor = bg;
+                document.getElementById('app-wrapper').style.backgroundColor = bg;
+                document.getElementById('shop-title').textContent = config.shop_title || defaultConfig.shop_title;
+                document.getElementById('shop-title').style.color = text;
+                renderListings();
+            },
+            mapToCapabilities: (config) => ({
+                recolorables: [
+                    { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+                    { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+                    { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+                    { get: () => config.primary_color || defaultConfig.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+                    { get: () => config.secondary_color || defaultConfig.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+                ],
+                borderables: [],
+                fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+                fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+            }),
+            mapToEditPanelValues: (config) => new Map([
+                ['shop_title', config.shop_title || defaultConfig.shop_title],
+                ['empty_message', config.empty_message || defaultConfig.empty_message]
+            ])
+        });
+
+        // Data SDK
+        const dataHandler = {
+            onDataChanged(data) {
+                allListings = data || [];
+                renderListings();
+            }
+        };
+
+        (async () => {
+            const res = await window.dataSdk.init(dataHandler);
+            if (!res.isOk) console.error('Data SDK init failed');
+
+            // Prepopulate with sample listings
+            const sampleListings = [
+                { item_name: 'Vintage Mountain Bike', seller_name: 'Alex Chen', seller_contact: 'alex@email.com', price: 150, condition: 'good', listing_type: 'sell', description: 'Well-maintained 26" mountain bike, great for trails', status: 'active', image_url: '', created_at: new Date().toISOString() },
+                { item_name: 'Gaming Laptop', seller_name: 'Sarah Martinez', seller_contact: '555-0142', price: 800, condition: 'like-new', listing_type: 'sell', description: 'RTX 3070, i7, barely used', status: 'active', image_url: '', created_at: new Date().toISOString() },
+                { item_name: 'Looking for: Used Electric Scooter', seller_name: 'Jordan Lee', seller_contact: 'jordan.lee@mail.com', price: 0, condition: 'good', listing_type: 'buy', description: 'Interested in any working e-scooter under $300', status: 'active', image_url: '', created_at: new Date().toISOString() },
+                { item_name: 'Coffee Table', seller_name: 'Emma Wilson', seller_contact: '555-0156', price: 50, condition: 'fair', listing_type: 'sell', description: 'Wooden coffee table, some scratches but sturdy', status: 'active', image_url: '', created_at: new Date().toISOString() },
+                { item_name: 'Book Exchange: Fantasy Novels', seller_name: 'Michael Park', seller_contact: 'mpark@email.com', price: 0, condition: 'good', listing_type: 'exchange', description: 'Trading fantasy books for sci-fi or mystery novels', status: 'active', image_url: '', created_at: new Date().toISOString() },
+                { item_name: 'Skateboard Deck', seller_name: 'Casey Taylor', seller_contact: '555-0198', price: 45, condition: 'good', listing_type: 'sell', description: 'Professional grade deck, good condition', status: 'active', image_url: '', created_at: new Date().toISOString() },
+                { item_name: 'Looking for: Vintage Cameras', seller_name: 'Nina Kumar', seller_contact: 'nina.k@mail.com', price: 0, condition: 'good', listing_type: 'buy', description: 'Collecting vintage film cameras from the 1970s-80s', status: 'active', image_url: '', created_at: new Date().toISOString() },
+                { item_name: 'Desk Lamp', seller_name: 'David Brown', seller_contact: '555-0143', price: 25, condition: 'like-new', listing_type: 'sell', description: 'Modern LED desk lamp, adjustable brightness', status: 'active', image_url: '', created_at: new Date().toISOString() },
+            ];
+
+            if (allListings.length === 0) {
+                for (const item of sampleListings) {
+                    await window.dataSdk.create(item);
+                }
+            }
+        })();
+
+        function getConfig() {
+            const c = window.elementSdk.config || {};
+            return {
+                bg: c.background_color || defaultConfig.background_color,
+                surface: c.surface_color || defaultConfig.surface_color,
+                text: c.text_color || defaultConfig.text_color,
+                primary: c.primary_color || defaultConfig.primary_color,
+                secondary: c.secondary_color || defaultConfig.secondary_color
+            };
+        }
+
+        // Filter handlers
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.style.background = '#e5e7eb';
+                    b.style.color = '#6b7280';
+                });
+                btn.style.background = getConfig().primary;
+                btn.style.color = '#fff';
+                currentFilter = btn.dataset.filter;
+                renderListings();
+            });
+        });
+
+        function renderListings() {
+            const colors = getConfig();
+            const grid = document.getElementById('listings-grid');
+            const emptyState = document.getElementById('empty-state');
+
+            let filtered = allListings.filter(l => l.status === 'active');
+            if (currentFilter !== 'all') filtered = filtered.filter(l => l.listing_type === currentFilter);
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                grid.classList.add('hidden');
+                document.getElementById('empty-message').textContent = window.elementSdk.config?.empty_message || defaultConfig.empty_message;
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+            grid.innerHTML = '';
+
+            filtered.forEach(listing => {
+                const card = document.createElement('div');
+                card.className = 'listing-card';
+                card.style.borderColor = '#e5e7eb';
+
+                const priceText = listing.listing_type === 'exchange' ? 'Exchange' : `$${listing.price}`;
+                const conditionColor = listing.condition === 'like-new' ? '#10b981' : listing.condition === 'good' ? '#3b82f6' : listing.condition === 'fair' ? '#f59e0b' : '#ef4444';
+
+                card.innerHTML = `
+          <div class="card-image" style="background:linear-gradient(135deg,${colors.primary} 0%,#764ba2 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">📦</div>
+          <div class="card-body" style="background:${colors.surface};color:${colors.text};">
+            <h3 style="font-weight:700;margin:0 0 6px;font-size:15px;line-height:1.3;">${escapeHtml(listing.item_name)}</h3>
+            <div style="margin-bottom:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <span class="price-badge" style="background:${colors.primary}15;color:${colors.primary};">${priceText}</span>
+              <span class="condition-badge" style="background:${conditionColor}15;color:${conditionColor};">${listing.condition}</span>
+            </div>
+            <p style="font-size:12px;color:${colors.secondary};margin:0 0 8px;line-height:1.3;">${escapeHtml((listing.description || '').substring(0, 50))}</p>
+            <p style="font-size:11px;color:${colors.secondary};margin:0 0 10px;"><i data-lucide="user" style="width:12px;height:12px;display:inline;"></i> ${escapeHtml(listing.seller_name)}</p>
+            <button class="detail-btn" data-id="${listing.__backendId}" style="width:100%;padding:8px;border-radius:6px;background:${colors.primary};color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;">View Details</button>
+          </div>
+        `;
+
+                card.querySelector('.detail-btn').addEventListener('click', () => openDetailModal(listing));
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function openDetailModal(listing) {
+            selectedListing = listing;
+            const colors = getConfig();
+            const modal = document.getElementById('detail-modal');
+            const title = document.getElementById('detail-title');
+            const content = document.getElementById('detail-content');
+
+            title.textContent = listing.item_name;
+
+            const conditionColor = listing.condition === 'like-new' ? '#10b981' : listing.condition === 'good' ? '#3b82f6' : listing.condition === 'fair' ? '#f59e0b' : '#ef4444';
+            const priceText = listing.listing_type === 'exchange' ? 'Exchange' : `$${listing.price}`;
+
+            content.innerHTML = `
+        <div style="background:linear-gradient(135deg,${colors.primary} 0%,#764ba2 100%);height:200px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;margin-bottom:16px;">📦</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <span class="price-badge" style="background:${colors.primary}15;color:${colors.primary};font-size:14px;padding:6px 12px;">${priceText}</span>
+          <span class="condition-badge" style="background:${conditionColor}15;color:${conditionColor};font-size:13px;padding:5px 10px;">${listing.condition}</span>
+          <span style="padding:5px 10px;border-radius:6px;background:#e5e7eb;color:${colors.secondary};font-size:11px;font-weight:600;">${listing.listing_type}</span>
+        </div>
+        <p style="color:${colors.text};margin:0 0 12px;line-height:1.6;font-size:14px;">${escapeHtml(listing.description || 'No description provided')}</p>
+        <div style="background:#f3f4f6;padding:12px;border-radius:8px;margin-bottom:16px;">
+          <p style="margin:0 0 8px;font-size:12px;color:${colors.secondary};"><strong>Seller:</strong> ${escapeHtml(listing.seller_name)}</p>
+          <p style="margin:0 0 8px;font-size:12px;color:${colors.secondary};"><strong>Contact:</strong> ${escapeHtml(listing.seller_contact)}</p>
+          <p style="margin:0;font-size:12px;color:${colors.secondary};"><strong>Status:</strong> ${listing.status === 'active' ? '🟢 Available' : '🔴 Sold'}</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button id="chat-btn" style="flex:1;padding:10px;border-radius:8px;background:${colors.primary};color:#fff;border:none;cursor:pointer;font-weight:600;">💬 Message Seller</button>
+          <button id="sold-btn" style="flex:1;padding:10px;border-radius:8px;background:#ef4444;color:#fff;border:none;cursor:pointer;font-weight:600;">Mark as Sold</button>
+        </div>
+      `;
+
+            document.getElementById('chat-btn').addEventListener('click', openChatModal);
+            document.getElementById('sold-btn').addEventListener('click', markAsSold);
+
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function openChatModal() {
+            if (!selectedListing) return;
+            document.getElementById('chat-seller').textContent = selectedListing.seller_name;
+            chatMessages = [
+                { sender: 'seller', text: `Hi! I'm interested in your ${selectedListing.item_name}. Is it still available?` },
+                { sender: 'you', text: 'Thanks for your interest! Yes, it is. What would you like to know?' }
+            ];
+            renderChatMessages();
+            document.getElementById('chat-modal').classList.remove('hidden');
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        function renderChatMessages() {
+            const colors = getConfig();
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML = '';
+
+            chatMessages.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-bubble';
+                const isYou = msg.sender === 'you';
+                bubble.style.cssText = `
+          background: ${isYou ? colors.primary : '#f3f4f6'};
+          color: ${isYou ? '#fff' : colors.text};
+          text-align: ${isYou ? 'right' : 'left'};
+          margin-left: ${isYou ? '30%' : '0'};
+          margin-right: ${isYou ? '0' : '30%'};
+        `;
+                bubble.textContent = msg.text;
+                messagesDiv.appendChild(bubble);
+            });
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            if (input.value.trim()) {
+                chatMessages.push({ sender: 'you', text: input.value });
+                setTimeout(() => {
+                    chatMessages.push({ sender: 'seller', text: 'Sounds great! Let me know when you want to come see it.' });
+                    renderChatMessages();
+                }, 500);
+                input.value = '';
+                renderChatMessages();
+            }
+        });
+
+        function markAsSold() {
+            if (!selectedListing) return;
+            const result = window.dataSdk.update({ ...selectedListing, status: 'sold' });
+            result.then(r => {
+                if (r.isOk) {
+                    showToast('Listing marked as sold');
+                    document.getElementById('detail-modal').classList.add('hidden');
+                    document.getElementById('chat-modal').classList.add('hidden');
+                    renderListings();
+                }
+            });
+        }
+
+        // Post Listing Modal
+        document.getElementById('post-btn').addEventListener('click', () => {
+            document.getElementById('post-form').reset();
+            document.getElementById('price-group').style.display = 'block';
+            document.getElementById('post-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('listing-type').addEventListener('change', (e) => {
+            document.getElementById('price-group').style.display = e.target.value === 'exchange' ? 'none' : 'block';
+            if (e.target.value === 'exchange') document.getElementById('price').value = '0';
+        });
+
+        document.getElementById('post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Posting...';
+
+            const newListing = {
+                item_name: document.getElementById('item-name').value,
+                listing_type: document.getElementById('listing-type').value,
+                price: parseInt(document.getElementById('price').value) || 0,
+                condition: document.getElementById('condition').value,
+                description: document.getElementById('description').value,
+                seller_name: document.getElementById('seller-name').value,
+                seller_contact: document.getElementById('seller-contact').value,
+                status: 'active',
+                image_url: '',
+                created_at: new Date().toISOString()
+            };
+
+            const result = await window.dataSdk.create(newListing);
+            if (result.isOk) {
+                showToast('Listing posted successfully!');
+                document.getElementById('post-modal').classList.add('hidden');
+            } else {
+                showToast('Error posting listing');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Post Listing';
+        });
+
+        document.getElementById('post-close').addEventListener('click', () => document.getElementById('post-modal').classList.add('hidden'));
+        document.getElementById('post-cancel').addEventListener('click', () => document.getElementById('post-modal').classList.add('hidden'));
+        document.getElementById('detail-close').addEventListener('click', () => document.getElementById('detail-modal').classList.add('hidden'));
+        document.getElementById('chat-close').addEventListener('click', () => {
+            document.getElementById('chat-modal').classList.add('hidden');
+            openDetailModal(selectedListing);
+        });
+
+        document.getElementById('post-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('post-modal')) document.getElementById('post-modal').classList.add('hidden');
+        });
+
+        document.getElementById('detail-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('detail-modal')) document.getElementById('detail-modal').classList.add('hidden');
+        });
+
+        document.getElementById('chat-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('chat-modal')) {
+                document.getElementById('chat-modal').classList.add('hidden');
+                openDetailModal(selectedListing);
+            }
+        });
+
+        function showToast(msg) {
+            const colors = getConfig();
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = colors.primary;
+            toast.style.color = '#fff';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+
+        lucide.createIcons();
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9f056606126141fc',t:'MTc3Njg2ODk4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>

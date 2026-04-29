@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+
+{% block title %}Moderation Queue — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Moderation Queue</h2>
+            <p class="text-muted">Review and approve user-contributed content for the portal. Total Enrollments: <span class="fw-bold text-primary">{{ total_enrollments }}</span></p>
+
+        </div>
+        <div class="badge bg-warning text-dark p-2 px-3 rounded-pill fw-bold" style="font-size: 1rem;">
+            {{ total_pending }} Pending Items
+        </div>
+    </div>
+
+    <!-- Tabs for different content types -->
+    <ul class="nav nav-pills mb-4 gap-2" id="modTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#posts" type="button">
+                Feed Posts <span class="badge bg-white text-primary ms-1">{{ pending_posts.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#materials" type="button">
+                Materials <span class="badge bg-white text-primary ms-1">{{ pending_materials.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#listings" type="button">
+                Marketplace <span class="badge bg-white text-primary ms-1">{{ pending_listings.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#projects" type="button">
+                Projects/Papers <span class="badge bg-white text-primary ms-1">{{ pending_papers.count|add:pending_capstones.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-semibold bg-dark text-white" data-bs-toggle="pill" data-bs-target="#announcements" type="button">
+                <i class="fas fa-bullhorn me-1"></i> Announcements
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#enrollment-list" type="button">
+                <i class="fas fa-users me-1"></i> Enrollment Lists
+            </button>
+        </li>
+    </ul>
+
+
+
+    <div class="tab-content" id="modTabsContent">
+        <!-- Posts Tab -->
+        <div class="tab-pane fade show active" id="posts">
+            {% if pending_posts %}
+                <div class="row g-3">
+                    {% for post in pending_posts %}
+                    <div class="col-12">
+                        <div class="card p-4 border-0 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #4f46e5; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                        {{ post.uploaded_by.first_name|first }}{{ post.uploaded_by.last_name|first }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ post.uploaded_by.get_full_name }}</h6>
+                                        <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'core:approve_item' 'feed.Post' post.id %}" class="btn btn-success btn-sm px-3 rounded-pill fw-bold">Approve</a>
+                                    <a href="{% url 'core:reject_item' 'feed.Post' post.id %}" class="btn btn-outline-danger btn-sm px-3 rounded-pill fw-bold">Reject</a>
+                                </div>
+                            </div>
+                            <p class="mb-0 text-dark bg-light p-3 rounded-3" style="white-space: pre-wrap;">{{ post.content }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
+                    <h5 class="fw-bold">All caught up!</h5>
+                    <p class="text-muted mb-0">No pending posts to moderate.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Materials Tab -->
+        <div class="tab-pane fade" id="materials">
+             {% if pending_materials %}
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Title / Material</th>
+                                <th>Uploaded By</th>
+                                <th>Course</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mat in pending_materials %}
+                            <tr>
+                                <td class="ps-4 py-3">
+                                    <div class="fw-bold">{{ mat.title }}</div>
+                                    <small class="text-muted">Type: {{ mat.material_type }}</small>
+                                </td>
+                                <td class="py-3">
+                                    <div class="fw-semibold">{{ mat.uploaded_by.get_full_name }}</div>
+                                    <small class="text-muted">{{ mat.uploaded_by.role|capfirst }}</small>
+                                </td>
+                                <td class="py-3">{{ mat.course_name }}</td>
+                                <td class="text-end pe-4 py-3">
+                                    <button class="btn btn-outline-primary btn-sm px-3 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#materialModal{{ mat.id }}">Examine</button>
+                                    <a href="{% url 'core:approve_item' 'materials.Material' mat.id %}" class="btn btn-success btn-sm px-3 rounded-pill me-1">Approve</a>
+                                    <a href="{% url 'core:reject_item' 'materials.Material' mat.id %}" class="btn btn-outline-danger btn-sm px-3 rounded-pill">Reject</a>
+                                </td>
+                            </tr>
+
+                            <!-- Material Detail Modal -->
+                            <div class="modal fade" id="materialModal{{ mat.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg rounded-4">
+                                        <div class="modal-header border-0 pb-0">
+                                            <h5 class="fw-bold">Examine Submission</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4 text-start">
+                                            <div class="row g-4">
+                                                <div class="col-md-6">
+                                                    <p class="small text-muted mb-1 text-uppercase fw-bold">Title</p>
+                                                    <h5 class="fw-bold text-dark mb-4">{{ mat.title }}</h5>
+                                                    
+                                                    <p class="small text-muted mb-1 text-uppercase fw-bold">Course</p>
+                                                    <p class="fw-semibold mb-4">{{ mat.course.code }} — {{ mat.course.name }}</p>
+
+                                                    <p class="small text-muted mb-1 text-uppercase fw-bold">Faculty</p>
+                                                    <p class="fw-semibold mb-4">{{ mat.faculty.get_full_name }}</p>
+                                                </div>
+                                                <div class="col-md-6 border-start ps-md-4">
+                                                    <p class="small text-muted mb-1 text-uppercase fw-bold">Description</p>
+                                                    <p class="mb-4">{{ mat.description|default:"No description provided." }}</p>
+
+                                                    <p class="small text-muted mb-1 text-uppercase fw-bold">Attachments</p>
+                                                    <div class="list-group list-group-flush">
+                                                        {% for attachment in mat.attachments.all %}
+                                                        <div class="list-group-item px-0 py-2 border-0 d-flex justify-content-between align-items-center bg-transparent">
+                                                            <span class="small fw-medium text-dark"><i class="fas {% if attachment.is_link %}fa-link{% else %}fa-file-pdf{% endif %} me-2 text-primary"></i> {{ attachment.name|default:"File Attachment" }}</span>
+                                                            {% if attachment.is_link %}
+                                                                <a href="{{ attachment.link_url }}" target="_blank" class="btn btn-sm btn-link text-primary text-decoration-none p-0">Open Link <i class="fas fa-external-link-alt ms-1"></i></a>
+                                                            {% else %}
+                                                                <a href="{{ attachment.file.url }}" target="_blank" class="btn btn-sm btn-link text-primary text-decoration-none p-0">Download <i class="fas fa-download ms-1"></i></a>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0 pt-0">
+                                            <a href="{% url 'core:approve_item' 'materials.Material' mat.id %}" class="btn btn-success px-4 rounded-pill">Approve Submission</a>
+                                            <a href="{% url 'core:reject_item' 'materials.Material' mat.id %}" class="btn btn-outline-danger px-4 rounded-pill">Reject</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
+                    <h5 class="fw-bold">No Materials Pending</h5>
+                    <p class="text-muted mb-0">The academic library is up to date.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Listings Tab -->
+        <div class="tab-pane fade" id="listings">
+             {% if pending_listings %}
+                <div class="row g-3">
+                    {% for item in pending_listings %}
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 p-4">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="fw-bold mb-0 text-primary">{{ item.item_name }}</h5>
+                                <span class="badge bg-light text-dark border fw-bold">{{ item.price }} BDT</span>
+                            </div>
+                            <p class="small text-muted flex-grow-1">{{ item.description }}</p>
+                            <hr class="my-3 opacity-10">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="small">
+                                    <span class="text-muted">By:</span> <strong>{{ item.uploaded_by.get_full_name }}</strong>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'core:approve_item' 'marketplace.Listing' item.id %}" class="btn btn-success btn-sm px-3 rounded-pill">Approve</a>
+                                    <a href="{% url 'core:reject_item' 'marketplace.Listing' item.id %}" class="btn btn-outline-danger btn-sm px-3 rounded-pill">Reject</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
+                    <h5 class="fw-bold">Marketplace is Clean</h5>
+                    <p class="text-muted mb-0">No new listings awaiting review.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Projects Tab -->
+        <div class="tab-pane fade" id="projects">
+            <!-- Papers -->
+            <h6 class="fw-bold text-uppercase small text-muted mb-3 d-flex align-items-center gap-2">
+                <i class="fas fa-file-lines"></i> Research Papers ({{ pending_papers.count }})
+            </h6>
+            {% if pending_papers %}
+                <div class="card border-0 shadow-sm mb-5 p-0 overflow-hidden">
+                     <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Title</th>
+                                <th>Author(s)</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paper in pending_papers %}
+                            <tr>
+                                <td class="ps-4"><div class="fw-bold">{{ paper.title }}</div></td>
+                                <td>{{ paper.authors }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'core:approve_item' 'projects.Paper' paper.id %}" class="btn btn-success btn-sm px-3 rounded-pill">Approve</a>
+                                    <a href="{% url 'core:reject_item' 'projects.Paper' paper.id %}" class="btn btn-outline-danger btn-sm px-3 rounded-pill">Reject</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                     </table>
+                </div>
+            {% endif %}
+
+            <!-- Capstones -->
+            <h6 class="fw-bold text-uppercase small text-muted mb-3 d-flex align-items-center gap-2">
+                <i class="fas fa-flask"></i> Capstone Projects ({{ pending_capstones.count }})
+            </h6>
+             {% if pending_capstones %}
+                <div class="row g-3">
+                    {% for proj in pending_capstones %}
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm p-4">
+                             <div class="d-flex justify-content-between align-items-center">
+                                 <div>
+                                     <h6 class="fw-bold mb-0">{{ proj.project_title }}</h6>
+                                     <small class="text-muted">Batch {{ proj.batch_year }} — Submitted by {{ proj.uploaded_by.get_full_name }}</small>
+                                 </div>
+                                 <div class="d-flex gap-2">
+                                    <a href="{% url 'core:approve_item' 'projects.Capstone' proj.id %}" class="btn btn-success btn-sm px-3 rounded-pill">Approve Project</a>
+                                    <a href="{% url 'core:reject_item' 'projects.Capstone' proj.id %}" class="btn btn-outline-danger btn-sm px-3 rounded-pill">Reject</a>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% if not pending_papers and not pending_capstones %}
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
+                    <h5 class="fw-bold">Research Portal Clear</h5>
+                    <p class="text-muted mb-0">No new academic projects to review.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Announcements Tab -->
+        <div class="tab-pane fade" id="announcements">
+            <div class="row">
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="fw-bold mb-4">Post New Announcement</h5>
+                        <form action="{% url 'core:create_announcement' %}" method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Title</label>
+                                <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Summer Registration" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Category</label>
+                                <select name="category" class="form-select rounded-3">
+                                    <option value="general">General</option>
+                                    <option value="academic">Academic</option>
+                                    <option value="event">Event</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">Content</label>
+                                <textarea name="content" class="form-control rounded-3" rows="4" placeholder="Announcement details..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill py-2">
+                                <i class="fas fa-paper-plane me-1"></i> Publish Announcement
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="fw-bold mb-4">Past Announcements</h5>
+                        {% if global_announcements %}
+                            <div class="list-group list-group-flush">
+                                {% for a in global_announcements %}
+                                <div class="list-group-item px-0 border-bottom-0 mb-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="fw-bold mb-0">{{ a.title }}</h6>
+                                        <span class="badge {% if a.category == 'urgent' %}bg-danger{% else %}bg-light text-muted{% endif %} px-2 rounded-pill small">{{ a.category|upper }}</span>
+                                    </div>
+                                    <p class="small text-muted mb-1">{{ a.content|truncatechars:120 }}</p>
+                                    <small class="text-muted" style="font-size: 0.7rem;">{{ a.created_at|date:"M d, Y" }} by {{ a.author.get_full_name }}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-history fa-2x mb-2 opacity-25"></i>
+                                <p class="small mb-0">No past announcements found.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        <!-- Enrollment Lists Tab -->
+        <div class="tab-pane fade" id="enrollment-list">
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold mb-4">Student Enrollment by Course</h5>
+                <div class="accordion accordion-flush" id="courseEnrollmentAccordion">
+                    {% for course in courses_with_enrollments %}
+                    <div class="accordion-item border-0 mb-2 shadow-sm rounded-3 overflow-hidden">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#course-{{ course.id }}">
+                                <div class="d-flex justify-content-between w-100 pe-3">
+                                    <span>{{ course.code }} — {{ course.name }}</span>
+                                    <span class="badge bg-primary rounded-pill">{{ course.enrolled_students.count }} Students</span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="course-{{ course.id }}" class="accordion-collapse collapse" data-bs-parent="#courseEnrollmentAccordion">
+                            <div class="accordion-body bg-white">
+                                {% if course.enrolled_students.all %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student Name</th>
+                                                    <th>Student ID</th>
+                                                    <th>Email</th>
+                                                    <th>Semester</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for enrollment in course.enrolled_students.all %}
+                                                <tr>
+                                                    <td>{{ enrollment.student.full_name }}</td>
+                                                    <td>{{ enrollment.student.student_id|default:"-" }}</td>
+                                                    <td>{{ enrollment.student.email }}</td>
+                                                    <td>{{ enrollment.semester }} {{ enrollment.year }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted small mb-0 p-3">No students enrolled in this course yet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

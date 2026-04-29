@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}Research & Projects — EastWest Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-card {
+        border-radius: 16px;
+        background: white;
+        padding: 24px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(0,0,0,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+    }
+    .project-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
+    
+    .area-box {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: #f1f5f9;
+        color: var(--primary);
+        margin-bottom: 16px;
+    }
+
+    .nav-pill-custom {
+        padding: 10px 20px;
+        border-radius: 40px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+        color: var(--text-muted);
+    }
+    .nav-pill-custom.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+        border-radius: 0;
+    }
+
+    .paper-item {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid transparent;
+        transition: border 0.2s;
+    }
+    .paper-item:hover { border-color: var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <div class="icon-box" style="background: #dcfce7; color: #16a34a; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="fas fa-microscope"></i>
+        </div>
+        <div>
+            <h4 class="fw-bold mb-0">Academic Research & Projects</h4>
+            <p class="text-muted mb-0 small">Repository of EWU's scholarly contributions</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary rounded-pill px-3 fw-bold small" data-bs-toggle="modal" data-bs-target="#submitPaperModal">
+            <i class="fas fa-file-export me-1"></i> Submit Paper
+        </button>
+        <button class="premium-btn d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#submitCapstoneModal">
+            <i class="fas fa-graduation-cap"></i> Submit Capstone
+        </button>
+    </div>
+</div>
+
+<!-- Section Switcher -->
+<div class="d-flex gap-4 border-bottom mb-4">
+    <div id="tab-research" class="nav-pill-custom active" onclick="switchSection('research')">Research Areas</div>
+    <div id="tab-capstone" class="nav-pill-custom" onclick="switchSection('capstone')">Capstone Projects</div>
+</div>
+
+<!-- Research Section -->
+<div id="section-research">
+    <div id="areas-grid" class="row g-4">
+        <!-- Areas will be injected here -->
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Capstone Section -->
+<div id="section-capstone" class="d-none">
+    <div id="capstone-grid" class="row g-4">
+        <!-- Capstones will be injected here -->
+    </div>
+</div>
+
+<!-- Area Detail Modal -->
+<div class="modal fade" id="areaDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="modal-area-icon" class="area-box mb-0" style="width:44px; height:44px; font-size:1.2rem;">🔬</div>
+                    <h5 id="modal-area-title" class="modal-title fw-bold">Research Area Title</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <h6 class="fw-bold small text-muted text-uppercase mb-2">Description</h6>
+                    <p id="modal-area-desc" class="text-muted"></p>
+                </div>
+                <div class="mb-4">
+                    <h6 class="fw-bold small text-muted text-uppercase mb-3">Published Papers</h6>
+                    <div id="modal-papers-list">
+                        <!-- Papers go here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Paper Modal -->
+<div class="modal fade" id="submitPaperModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Submit Research Paper</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="submitPaperForm">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Research Area</label>
+                            <select name="research_area_id" class="form-select rounded-3">
+                                {% for area in areas %}
+                                <option value="{{ area.id }}">{{ area.research_area }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Paper Title</label>
+                            <input type="text" name="title" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Authors</label>
+                            <input type="text" name="authors" class="form-control rounded-3" placeholder="Names of authors" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Publication Year</label>
+                            <input type="number" name="publication_year" class="form-control rounded-3" value="2024">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">PDF URL</label>
+                            <input type="url" name="pdf_link" class="form-control rounded-3" placeholder="https://...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Abstract</label>
+                            <textarea name="abstract" class="form-control rounded-3" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+                <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                    <i class="fas fa-info-circle me-1"></i> Student paper submissions require **admin approval**.
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 p-4">
+                <button type="button" onclick="submitPaper()" class="btn premium-btn w-100">Submit Paper</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Capstone Modal -->
+<div class="modal fade" id="submitCapstoneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Submit Capstone Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="submitCapstoneForm">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold">Project Title</label>
+                            <input type="text" name="project_title" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Batch Year</label>
+                            <input type="number" name="batch_year" class="form-control rounded-3" value="2024">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Team Members</label>
+                            <textarea name="team_members" class="form-control rounded-3" rows="1" placeholder="Names, IDs..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Project Description</label>
+                            <textarea name="project_description" class="form-control rounded-3" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+                <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                    <i class="fas fa-info-circle me-1"></i> Final year projects will be reviewed by the department before publication.
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 p-4">
+                <button type="button" onclick="submitCapstone()" class="btn premium-btn w-100">Submit Project</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentSection = 'research';
+
+    async function loadResearchAreas() {
+        const grid = document.getElementById('areas-grid');
+        try {
+            const res = await fetch('{% url "projects:api_research_areas" %}');
+            const data = await res.json();
+            grid.innerHTML = data.areas.map(area => `
+                <div class="col-md-6 col-lg-4">
+                    <div class="project-card shadow-sm" onclick="showAreaDetail(${area.id})">
+                        <div class="area-box">${area.icon}</div>
+                        <h5 class="fw-bold">${area.research_area}</h5>
+                        <p class="small text-muted flex-grow-1">${area.description.substring(0, 100)}...</p>
+                        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                            <span class="small text-primary fw-bold">${area.paper_count} Papers</span>
+                            <span class="text-muted small">Lead: ${area.lead_faculty}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) { console.error(e); }
+    }
+
+    async function showAreaDetail(id) {
+        // Fetch specific papers for this area
+        try {
+            const resArea = await fetch('{% url "projects:api_research_areas" %}');
+            const dataArea = await resArea.json();
+            const area = dataArea.areas.find(a => a.id === id);
+            
+            document.getElementById('modal-area-title').innerText = area.research_area;
+            document.getElementById('modal-area-desc').innerText = area.description;
+            document.getElementById('modal-area-icon').innerText = area.icon;
+
+            const resPapers = await fetch(`{% url "projects:api_papers" %}?area_id=${id}`);
+            const dataPapers = await resPapers.json();
+            const list = document.getElementById('modal-papers-list');
+            
+            if (dataPapers.papers.length === 0) {
+                list.innerHTML = `<div class="text-center py-4 text-muted small">No papers published in this area yet.</div>`;
+            } else {
+                list.innerHTML = dataPapers.papers.map(p => `
+                    <div class="paper-item">
+                        <h6 class="fw-bold mb-1">${p.title}</h6>
+                        <div class="small text-muted mb-2">${p.authors} — ${p.publication_year}</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">${p.uploaded_by}</span>
+                            ${p.pdf_link ? `<a href="${p.pdf_link}" target="_blank" class="btn btn-sm btn-link p-0 text-primary fw-bold text-decoration-none">Read PDF <i class="fas fa-external-link-alt ms-1"></i></a>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            new bootstrap.Modal(document.getElementById('areaDetailModal')).show();
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadCapstones() {
+        const grid = document.getElementById('capstone-grid');
+        try {
+            const res = await fetch('{% url "projects:api_capstones" %}');
+            const data = await res.json();
+            grid.innerHTML = data.capstones.map(c => `
+                <div class="col-md-6">
+                    <div class="project-card shadow-sm border-0">
+                        <div class="d-flex justify-content-between mb-2">
+                             <span class="badge bg-light text-primary border py-1">Batch ${c.batch_year}</span>
+                             <span class="badge bg-success py-1">${c.status}</span>
+                        </div>
+                        <h5 class="fw-bold">${c.project_title}</h5>
+                        <p class="small text-muted flex-grow-1">${c.project_description.substring(0, 150)}...</p>
+                        <hr class="my-3 opacity-10">
+                        <div class="small mb-3">
+                            <div class="fw-bold">Team:</div>
+                            <div class="text-muted">${c.team_members}</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <span class="small text-muted">Supervisor: <b>${c.faculty_supervisor}</b></span>
+                            <div class="d-flex gap-2">
+                                ${c.report_pdf ? `<a href="${c.report_pdf}" class="text-primary"><i class="fas fa-file-pdf"></i></a>` : ''}
+                                ${c.presentation_slides ? `<a href="${c.presentation_slides}" class="text-warning"><i class="fas fa-file-powerpoint"></i></a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) { console.error(e); }
+    }
+
+    function switchSection(sec) {
+        currentSection = sec;
+        document.getElementById('tab-research').classList.toggle('active', sec === 'research');
+        document.getElementById('tab-capstone').classList.toggle('active', sec === 'capstone');
+        document.getElementById('section-research').classList.toggle('d-none', sec !== 'research');
+        document.getElementById('section-capstone').classList.toggle('d-none', sec !== 'capstone');
+        
+        if (sec === 'research') loadResearchAreas();
+        else loadCapstones();
+    }
+
+    async function submitPaper() {
+        const form = document.getElementById('submitPaperForm');
+        const formData = new FormData(form);
+        try {
+            const res = await fetch('{% url "projects:api_papers" %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: formData
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if (res.ok) location.reload();
+        } catch (e) { console.error(e); }
+    }
+
+    async function submitCapstone() {
+        const form = document.getElementById('submitCapstoneForm');
+        const formData = new FormData(form);
+        try {
+            const res = await fetch('{% url "projects:api_capstones" %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: formData
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if (res.ok) location.reload();
+        } catch (e) { console.error(e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => loadResearchAreas());
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-5">
+        <h2 class="fw-bold mb-1">General Dashboard</h2>
+        <p class="text-muted">Total portal activity and engagement overview.</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-6 col-md-4 col-xl-3">
+            <div class="card p-4 border-0 shadow-sm text-center h-100" style="border-radius: 20px;">
+                <div class="icon-box mx-auto mb-3" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-rss"></i>
+                </div>
+                <div class="h2 fw-bold mb-0">{{ total_posts }}</div>
+                <div class="small fw-semibold text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem;">Social Posts</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-3">
+            <div class="card p-4 border-0 shadow-sm text-center h-100" style="border-radius: 20px;">
+                <div class="icon-box mx-auto mb-3" style="background: rgba(37, 99, 235, 0.1); color: #2563eb; width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="h2 fw-bold mb-0">{{ total_materials }}</div>
+                <div class="small fw-semibold text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem;">Academic Resources</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-3">
+            <div class="card p-4 border-0 shadow-sm text-center h-100" style="border-radius: 20px;">
+                <div class="icon-box mx-auto mb-3" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div class="h2 fw-bold mb-0">{{ total_listings }}</div>
+                <div class="small fw-semibold text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem;">Active Listings</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-3">
+            <div class="card p-4 border-0 shadow-sm text-center h-100" style="border-radius: 20px;">
+                <div class="icon-box mx-auto mb-3" style="background: rgba(16, 185, 129, 0.1); color: #10b981; width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <div class="h2 fw-bold mb-0">{{ total_papers }}</div>
+                <div class="small fw-semibold text-muted text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem;">Research Papers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Section -->
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card p-4 border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <h6 class="fw-bold mb-4">Portal Guidelines</h6>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0 text-primary"><i class="fas fa-shield-check fa-2x"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Admin Approval System</h6>
+                        <p class="small text-muted mb-0">All student-contributed content (Posts, Marketplace, Materials) is reviewed by administrators before being public.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0 text-success"><i class="fas fa-user-graduate fa-2x"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Faculty Auto-Approval</h6>
+                        <p class="small text-muted mb-0">Verified Faculty members have their uploads published instantly to ensure academic efficiency.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="flex-shrink-0 text-warning"><i class="fas fa-circle-exclamation fa-2x"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Community Safety</h6>
+                        <p class="small text-muted mb-0">Keep your interactions professional. Any violation of department policies will result in immediate suspension.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+             <div class="card border-0 shadow-sm overflow-hidden h-100" style="border-radius: 20px;">
+                <div class="p-4 bg-light border-bottom">
+                    <h6 class="mb-0 fw-bold">Recent Uploads</h6>
+                </div>
+                <div class="p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item px-4 py-3 border-0">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-semibold">Summer 2024 Reg Guidelines</span>
+                                <small class="text-muted">Just now</small>
+                            </div>
+                            <small class="text-primary mt-1 d-block">Academic Materials</small>
+                        </li>
+                        <li class="list-group-item px-4 py-3 border-0">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-semibold">CAS 2.0 Research Paper</span>
+                                <small class="text-muted">2 hours ago</small>
+                            </div>
+                            <small class="text-success mt-1 d-block">Research Projects</small>
+                        </li>
+                    </ul>
+                </div>
+             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

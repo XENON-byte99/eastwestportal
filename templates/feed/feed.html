@@ -1,0 +1,496 @@
+{% extends 'base.html' %}
+
+{% block title %}Feed — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="feed-container">
+    <!-- Create Post Box -->
+    <div class="card p-3 mb-4 border-0 shadow-sm" style="border-radius: 12px;">
+        <div class="d-flex gap-3 align-items-center mb-3">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                {{ user.first_name|first }}{{ user.last_name|first }}
+            </div>
+            <button class="btn w-100 text-start text-muted bg-light border-0 py-2 px-3 hover-bg-gray" 
+                    style="border-radius: 20px;" 
+                    data-bs-toggle="modal" data-bs-target="#createPostModal">
+                What's on your mind, {{ user.first_name }}?
+            </button>
+        </div>
+        <hr class="my-2 opacity-10">
+        <div class="d-flex justify-content-around">
+            <button class="btn btn-sm text-muted fw-semibold py-2 w-100 rounded-3 hover-bg-gray" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-video text-danger me-2"></i>Live Video
+            </button>
+            <button class="btn btn-sm text-muted fw-semibold py-2 w-100 rounded-3 hover-bg-gray" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-images text-success me-2"></i>Photo/video
+            </button>
+            <button class="btn btn-sm text-muted fw-semibold py-2 w-100 rounded-3 hover-bg-gray" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-smile text-warning me-2"></i>Activity
+            </button>
+        </div>
+    </div>
+
+    <!-- Posts Feed -->
+    <div id="posts-wrapper">
+        <!-- Posts will be injected here by JS -->
+        <div class="text-center py-5" id="feed-loader">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 16px;">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bold w-100 text-center">Create post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                        {{ user.first_name|first }}{{ user.last_name|first }}
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">{{ user.get_full_name }}</h6>
+                        <span class="badge bg-light text-muted fw-medium py-1 px-2 border" style="font-size: 0.7rem;">
+                            <i class="fas fa-globe-americas me-1"></i> Public
+                        </span>
+                    </div>
+                </div>
+                <textarea id="postContent" class="form-control border-0 bg-transparent fs-5" 
+                          placeholder="What's on your mind?" rows="4" style="resize: none; outline: none; box-shadow: none;"></textarea>
+                
+                <div class="border rounded-3 p-3 mt-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold small">Add to your post</span>
+                    <div class="d-flex gap-3">
+                        <i class="fas fa-images text-success cursor-pointer" title="Photo/Video"></i>
+                        <i class="fas fa-user-tag text-primary cursor-pointer" title="Tag People"></i>
+                        <i class="fas fa-smile text-warning cursor-pointer" title="Feeling/Activity"></i>
+                        <i class="fas fa-location-dot text-danger cursor-pointer" title="Check In"></i>
+                        <i class="fas fa-ellipsis-h text-muted cursor-pointer"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0 pb-3 px-3 d-flex gap-2">
+                <button type="button" id="btnSaveDraft" class="btn btn-light flex-grow-1 fw-bold rounded-pill">Save Draft</button>
+                <button type="button" id="btnSubmitPost" class="btn premium-btn flex-grow-1">Post</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Generic Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-body text-center p-4">
+                <div class="text-danger mb-3" style="font-size: 3rem;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h5 id="deleteModalTitle" class="fw-bold mb-2">Delete?</h5>
+                <p id="deleteModalText" class="text-muted small mb-4">Are you sure you want to delete this? This action cannot be undone.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light px-4 rounded-pill fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 rounded-pill fw-bold">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-bg-gray:hover { background-color: #f1f5f9; }
+    .cursor-pointer { cursor: pointer; }
+    
+    .post-card {
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        animation: slideUp 0.4s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    .post-header { padding: 12px 16px; }
+    .post-body { padding: 4px 16px 12px; }
+    .post-footer { border-top: 1px solid #f1f5f9; padding: 4px 16px; }
+    
+    .post-action-btn {
+        flex: 1;
+        background: none;
+        border: none;
+        padding: 8px 0;
+        color: #65676b;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    
+    .post-action-btn:hover { background: #f1f5f9; color: #65676b; }
+    .post-action-btn.active { color: var(--primary); }
+
+    .comment-item {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .comment-bubble {
+        background-color: #f1f5f9;
+        border-radius: 18px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+    .like-pulse { animation: pulse 0.3s ease; color: #ef4444 !important; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadPosts() {
+    const wrapper = document.getElementById('posts-wrapper');
+    try {
+        const response = await fetch('/feed/api/posts/');
+        const data = await response.json();
+        const loader = document.getElementById('feed-loader');
+        if (loader) loader.remove();
+
+        if (data.posts.length === 0) {
+            wrapper.innerHTML = `
+                <div class="card p-5 text-center text-muted border-0 shadow-sm" style="border-radius: 12px;">
+                    <i class="fas fa-rss fa-3x mb-3 opacity-25"></i>
+                    <h5>No posts to show</h5>
+                    <p class="small">The local community is quiet. Start the conversation!</p>
+                </div>`;
+            return;
+        }
+
+        wrapper.innerHTML = data.posts.map(post => renderPostHtml(post)).join('');
+    } catch (error) {
+        console.error('Error loading posts:', error);
+    }
+}
+
+function renderPostHtml(post) {
+    const isDraft = post.is_draft ? '<span class="badge bg-warning text-dark ms-2">Draft</span>' : '';
+    return `
+        <div id="post-${post.id}" class="post-card shadow-sm border-0 ${post.is_draft ? 'opacity-75' : ''}">
+            <div class="post-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                        ${post.avatar_initials}
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold d-flex align-items-center gap-1">
+                            ${post.author}
+                            ${post.author_role === 'Faculty' ? '<i class="fas fa-check-circle text-primary" style="font-size: 0.8rem;" title="Verified Faculty"></i>' : ''}
+                            ${isDraft}
+                        </h6>
+                        <small class="text-muted" style="font-size: 0.75rem;">${post.created_at}</small>
+                    </div>
+                </div>
+                ${post.can_delete || post.is_draft ? `
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light border-0 rounded-circle" style="width: 32px; height: 32px;" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-h text-muted"></i></button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                        ${post.is_draft ? `<li><a class="dropdown-item fw-semibold text-primary" href="#" onclick="publishDraft(${post.id})"><i class="fas fa-paper-plane me-2"></i>Publish Now</a></li>` : ''}
+                        ${post.can_delete ? `<li><a class="dropdown-item fw-semibold text-danger" href="#" onclick="deletePost(${post.id})"><i class="fas fa-trash-alt me-2"></i>Delete</a></li>` : ''}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+            <div class="post-body">
+                <p class="mb-2" style="white-space: pre-wrap;">${post.content}</p>
+            </div>
+            ${!post.is_draft ? `
+            <div class="px-3 pb-2 d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
+                <div class="text-primary fw-medium"><i class="fas fa-heart"></i> <span id="like-count-${post.id}">${post.likes}</span> likes</div>
+                <div class="text-muted"><span id="comment-count-${post.id}">${post.comments.length}</span> comments</div>
+            </div>
+            <div class="post-footer d-flex">
+                <button id="like-btn-${post.id}" class="post-action-btn" onclick="likePost(${post.id})">
+                    <i class="far fa-heart me-1"></i> Like
+                </button>
+                <button class="post-action-btn" onclick="focusComment(${post.id})">
+                    <i class="far fa-comment me-1"></i> Comment
+                </button>
+                <button class="post-action-btn">
+                    <i class="far fa-share-square me-1"></i> Share
+                </button>
+            </div>
+            <!-- Comments Section -->
+            <div class="px-3 pb-3">
+                <div id="comments-${post.id}" class="mt-2">
+                    ${post.comments.map(c => renderCommentHtml(c)).join('')}
+                </div>
+                <!-- New Comment Input -->
+                <div class="d-flex align-items-center gap-2 mt-2">
+                     <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.7rem; flex-shrink: 0;">
+                        {{ user.first_name|first }}{{ user.last_name|first }}
+                    </div>
+                    <div class="w-100 position-relative">
+                        <input id="input-comment-${post.id}" type="text" 
+                               class="form-control border-0 bg-light rounded-pill px-3 py-1 small" 
+                               placeholder="Write a comment..."
+                               onkeypress="if(event.key==='Enter') submitComment(${post.id})">
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+
+function renderCommentHtml(comment) {
+    return `
+        <div id="comment-${comment.id}" class="comment-item d-flex align-items-start justify-content-between gap-2">
+            <div class="d-flex align-items-start gap-2 w-100">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0;">
+                    ${comment.avatar_initials}
+                </div>
+                <div class="comment-bubble w-100">
+                    <div class="fw-bold" style="font-size: 0.8rem;">${comment.author}</div>
+                    <div id="comment-text-${comment.id}" style="white-space: pre-wrap;">${comment.text}</div>
+                    
+                    <!-- Inline Edit UI (Hidden by default) -->
+                    <div id="edit-comment-ui-${comment.id}" class="d-none mt-2">
+                        <textarea id="edit-comment-input-${comment.id}" class="form-control form-control-sm mb-2" rows="2">${comment.text}</textarea>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-primary py-1 px-2 fw-semibold" style="font-size: 0.75rem;" onclick="saveCommentEdit(${comment.id})">Save</button>
+                            <button class="btn btn-sm btn-light py-1 px-2 fw-semibold" style="font-size: 0.75rem;" onclick="cancelCommentEdit(${comment.id})">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions Dropdown for Comment -->
+            ${comment.can_edit || comment.can_delete ? `
+            <div class="dropdown flex-shrink-0">
+                <button class="btn btn-sm btn-link text-muted p-0 border-0" data-bs-toggle="dropdown" style="font-size: 0.8rem;"><i class="fas fa-ellipsis-v"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" style="font-size: 0.8rem;">
+                    ${comment.can_edit ? `<li><a class="dropdown-item fw-semibold" href="#" onclick="toggleEditComment(${comment.id})"><i class="fas fa-edit me-2"></i>Edit</a></li>` : ''}
+                    ${comment.can_delete ? `<li><a class="dropdown-item fw-semibold text-danger" href="#" onclick="deleteComment(${comment.id})"><i class="fas fa-trash-alt me-2"></i>Delete</a></li>` : ''}
+                </ul>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+async function submitPost(isDraft = false) {
+    const content = document.getElementById('postContent').value.trim();
+    if (!content) {
+        showToast('Please enter some content', 'warning');
+        return;
+    }
+
+    const btn = isDraft ? document.getElementById('btnSaveDraft') : document.getElementById('btnSubmitPost');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = isDraft ? 'Saving...' : 'Posting...';
+
+    try {
+        const response = await fetch('/feed/api/posts/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ content: content, is_draft: isDraft })
+        });
+        const result = await response.json();
+        
+        if (response.ok) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createPostModal'));
+            modal.hide();
+            document.getElementById('postContent').value = '';
+            showToast(result.message, result.is_approved || isDraft ? 'success' : 'info');
+            
+            if (result.is_approved || isDraft) {
+                const wrapper = document.getElementById('posts-wrapper');
+                const postData = {
+                    ...result,
+                    content: content,
+                    likes: 0,
+                    comments: [],
+                    created_at: 'Just now',
+                    author_role: '{{ user.get_role_display }}',
+                    is_draft: isDraft,
+                    can_delete: true
+                };
+                wrapper.insertAdjacentHTML('afterbegin', renderPostHtml(postData));
+            }
+        } else {
+            showToast(result.error || 'Something went wrong', 'error');
+        }
+    } catch (error) { 
+        console.error(error);
+        showToast('Connection error', 'error');
+    } finally { 
+        btn.disabled = false; 
+        btn.innerText = originalText; 
+    }
+}
+
+async function publishDraft(id) {
+    try {
+        const response = await fetch(`/feed/api/posts/${id}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ is_draft: false })
+        });
+        if (response.ok) {
+            showToast('Draft published!', 'success');
+            setTimeout(() => location.reload(), 1000); // Reload to reflect status changes properly
+        }
+    } catch (error) { showToast('Error publishing draft', 'error'); }
+}
+
+let itemToDelete = null; // { id: 1, type: 'post' | 'comment' }
+
+function deletePost(id) {
+    itemToDelete = { id: id, type: 'post' };
+    document.getElementById('deleteModalTitle').innerText = 'Delete Post?';
+    document.getElementById('deleteModalText').innerText = 'Are you sure you want to delete this post?';
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+}
+
+
+async function likePost(id) {
+    const btn = document.getElementById(`like-btn-${id}`);
+    const icon = btn.querySelector('i');
+    const countSpan = document.getElementById(`like-count-${id}`);
+    
+    icon.classList.add('like-pulse');
+    icon.className = 'fas fa-heart like-pulse';
+    
+    try {
+        const response = await fetch(`/feed/api/posts/${id}/like/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            countSpan.innerText = data.likes;
+        }
+    } catch (error) { 
+        console.error(error);
+        icon.className = 'far fa-heart'; // Reset on error
+    }
+}
+
+async function submitComment(id) {
+    const input = document.getElementById(`input-comment-${id}`);
+    const text = input.value.trim();
+    if (!text) return;
+
+    try {
+        const response = await fetch(`/feed/api/posts/${id}/comments/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ text: text })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            input.value = '';
+            const commentsDiv = document.getElementById(`comments-${id}`);
+            commentsDiv.insertAdjacentHTML('beforeend', renderCommentHtml(data));
+            
+            const commentCount = document.getElementById(`comment-count-${id}`);
+            commentCount.innerText = parseInt(commentCount.innerText) + 1;
+        }
+    } catch (error) { console.error(error); }
+}
+
+function focusComment(id) { document.getElementById(`input-comment-${id}`).focus(); }
+
+function toggleEditComment(id) {
+    document.getElementById(`edit-comment-ui-${id}`).classList.remove('d-none');
+    document.getElementById(`comment-text-${id}`).classList.add('d-none');
+}
+
+function cancelCommentEdit(id) {
+    document.getElementById(`edit-comment-ui-${id}`).classList.add('d-none');
+    document.getElementById(`comment-text-${id}`).classList.remove('d-none');
+}
+
+async function saveCommentEdit(id) {
+    const text = document.getElementById(`edit-comment-input-${id}`).value.trim();
+    if (!text) return;
+    try {
+        const response = await fetch(`/feed/api/comments/${id}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ text: text })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            document.getElementById(`comment-text-${id}`).innerText = data.text;
+            cancelCommentEdit(id);
+            showToast('Comment updated', 'success');
+        }
+    } catch (error) { console.error(error); }
+}
+
+function deleteComment(id) {
+    itemToDelete = { id: id, type: 'comment' };
+    document.getElementById('deleteModalTitle').innerText = 'Delete Comment?';
+    document.getElementById('deleteModalText').innerText = 'Are you sure you want to delete this comment?';
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+    if (!itemToDelete) return;
+    const btn = document.getElementById('confirmDeleteBtn');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = 'Deleting...';
+    
+    try {
+        const url = itemToDelete.type === 'post' 
+            ? `/feed/api/posts/${itemToDelete.id}/` 
+            : `/feed/api/comments/${itemToDelete.id}/`;
+            
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+        
+        if (response.ok) {
+            if (itemToDelete.type === 'post') {
+                document.getElementById(`post-${itemToDelete.id}`).remove();
+                showToast('Post deleted', 'info');
+            } else {
+                document.getElementById(`comment-${itemToDelete.id}`).remove();
+                showToast('Comment deleted', 'info');
+            }
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+            modal.hide();
+        } else {
+            const result = await response.json().catch(() => ({}));
+            showToast(result.error || `Failed to delete ${itemToDelete.type}`, 'error');
+        }
+    } catch (error) { 
+        showToast(`Error deleting ${itemToDelete.type}`, 'error'); 
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+        itemToDelete = null;
+    }
+});
+
+document.getElementById('btnSubmitPost').addEventListener('click', () => submitPost(false));
+document.getElementById('btnSaveDraft').addEventListener('click', () => submitPost(true));
+document.addEventListener('DOMContentLoaded', loadPosts);
+</script>
+
+{% endblock %}

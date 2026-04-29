@@ -1,0 +1,203 @@
+<nav class="navbar navbar-expand-lg sticky-top shadow-sm" style="background-color: white; border-bottom: 1px solid rgba(0,0,0,0.1); height: var(--navbar-height);">
+    <div class="container-fluid px-4">
+        <!-- Hamburger Button for Mobile -->
+        <button class="btn btn-light d-lg-none me-2 border-0 shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+            <i class="fas fa-bars text-muted"></i>
+        </button>
+
+        <!-- Brand -->
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'feed:index' %}" style="color: var(--primary);">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-university" style="color:#fff;font-size:.9rem;"></i>
+            </div>
+            <span class="d-none d-sm-inline">EastWest Portal</span>
+        </a>
+
+        <!-- Search Bar -->
+        <div class="ms-3 d-none d-md-flex align-items-center" style="position: relative; max-width: 400px; width: 100%;">
+            <i class="fas fa-search" style="position: absolute; left: 14px; color: #94a3b8; font-size: 0.9rem;"></i>
+            <input type="text" id="global-search-input" placeholder="Search the community..." autocomplete="off"
+                   style="width: 100%; border: none; background: #f1f5f9; padding: 8px 16px 8px 40px; border-radius: 40px; font-size: 0.9rem; outline: none;">
+            
+            <!-- Search Results Dropdown -->
+            <div id="search-results-dropdown" class="card shadow-lg border-0 mt-2 p-2 position-absolute" 
+                 style="top: 100%; left: 0; width: 100%; border-radius: 16px; display: none; z-index: 1050; max-height: 480px; overflow-y: auto;">
+                <div id="search-results-list"></div>
+            </div>
+        </div>
+
+        <!-- Icons/User -->
+        <div class="d-flex align-items-center gap-3 ms-auto">
+            <a href="{% url 'feed:index' %}" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 40px; height: 40px; background: #f1f5f9; border: none;">
+                <i class="fas fa-home text-muted"></i>
+            </a>
+            <div class="dropdown">
+                <div class="btn btn-light rounded-circle d-flex align-items-center justify-content-center p-0 position-relative" 
+                     id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false"
+                     style="width: 40px; height: 40px; background: #f1f5f9; border: none; cursor: pointer;">
+                    <i class="fas fa-bell text-muted"></i>
+                    <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" 
+                          style="display: none; font-size: 0.6rem; padding: 0.35em 0.5em; margin-left: -8px; margin-top: 8px;">
+                        0
+                    </span>
+                </div>
+                <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" 
+                     style="border-radius: 16px; min-width: 320px; max-height: 480px; overflow: hidden; display: none;" id="notification-dropdown">
+                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">Notifications</h6>
+                        <button class="btn btn-link btn-sm text-decoration-none p-0 small" onclick="markAllRead()" style="font-size: 0.75rem;">Mark all as read</button>
+                    </div>
+                    <div id="notification-list" style="max-height: 380px; overflow-y: auto;">
+                        <div class="p-4 text-center text-muted small">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="dropdown">
+                <div class="d-flex align-items-center gap-2 cursor-pointer" data-bs-toggle="dropdown" style="cursor: pointer;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem;">
+                        {{ user.first_name|first }}{{ user.last_name|first }}
+                    </div>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-2" style="border-radius: 16px; min-width: 240px;">
+                    <li>
+                        <div class="px-3 py-2">
+                            <h6 class="mb-0 fw-bold">{{ user.get_full_name }}</h6>
+                            <small class="text-muted">{{ user.email }}</small>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item rounded-3 py-2" href="{% url 'core:home' %}"><i class="fas fa-chart-line me-2 text-muted"></i>Dashboard</a></li>
+                    <li><a class="dropdown-item rounded-3 py-2" href="#"><i class="fas fa-user me-2 text-muted"></i>Profile Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item rounded-3 py-2 text-danger" href="{% url 'core:logout' %}"><i class="fas fa-right-from-bracket me-2"></i>Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    const searchInput = document.getElementById('global-search-input');
+    const searchDropdown = document.getElementById('search-results-dropdown');
+    const searchList = document.getElementById('search-results-list');
+    let searchTimeout = null;
+
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+            searchDropdown.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(async () => {
+            const res = await fetch(`{% url 'core:global_search_api' %}?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            
+            if (data.results.length === 0) {
+                searchList.innerHTML = '<div class="p-3 text-center text-muted small">No results matching "' + query + '"</div>';
+            } else {
+                searchList.innerHTML = data.results.map(r => `
+                    <a href="${r.url}" class="d-flex align-items-center gap-3 p-2 rounded-3 text-decoration-none hover-bg-light transition-all" style="color: inherit;">
+                        <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas ${r.icon} text-muted" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="font-size: 0.85rem;">${r.title}</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">${r.type} • ${r.subtitle}</div>
+                        </div>
+                    </a>
+                `).join('');
+            }
+            searchDropdown.style.display = 'block';
+        }, 300);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+            searchDropdown.style.display = 'none';
+        }
+    });
+
+    // Handle notifications
+    async function fetchNotifications() {
+        const badge = document.getElementById('notification-badge');
+        const list = document.getElementById('notification-list');
+        const dropdownMenu = document.getElementById('notification-dropdown');
+        
+        try {
+            const res = await fetch('{% url "core:api_notifications" %}');
+            const data = await res.json();
+            
+            if (data.unread_count > 0) {
+                badge.innerText = data.unread_count > 9 ? '9+' : data.unread_count;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+            
+            if (data.notifications.length === 0) {
+                list.innerHTML = '<div class="p-4 text-center text-muted small"><i class="fas fa-bell-slash d-block mb-2 opacity-25" style="font-size: 1.5rem;"></i>No notifications yet</div>';
+            } else {
+                list.innerHTML = data.notifications.map(n => `
+                    <a href="${n.link}" class="dropdown-item p-3 border-bottom d-flex gap-3 align-items-start transition-all ${n.is_read ? 'opacity-75' : 'bg-light'}" style="white-space: normal;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+                             style="width: 32px; height: 32px; background: ${n.type === 'material_approval' ? '#ecfdf5' : '#eff6ff'}; color: ${n.type === 'material_approval' ? '#10b981' : '#3b82f6'};">
+                            <i class="fas ${n.type === 'material_approval' ? 'fa-check' : 'fa-upload'}" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold small" style="color: var(--text-main); line-height: 1.2;">${n.title}</div>
+                            <div class="text-muted small mt-1" style="font-size: 0.75rem; line-height: 1.4;">${n.message}</div>
+                            <div class="text-muted mt-1" style="font-size: 0.65rem;">${n.created_at}</div>
+                        </div>
+                        ${!n.is_read ? '<div class="rounded-circle bg-primary" style="width: 6px; height: 6px; margin-top: 6px;"></div>' : ''}
+                    </a>
+                `).join('');
+            }
+        } catch (err) {
+            console.error('Failed to fetch notifications', err);
+        }
+    }
+
+    async function markAllRead() {
+        try {
+            await fetch('{% url "core:api_notifications_read" %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            fetchNotifications(); // Refresh
+        } catch (err) {
+            console.error('Failed to mark notifications as read', err);
+        }
+    }
+
+    // Initial fetch
+    fetchNotifications();
+    // Refresh every 30 seconds
+    setInterval(fetchNotifications, 30000);
+
+    // Bootstrap dropdown manual handle to fix layout if needed
+    const bell = document.getElementById('notification-bell');
+    const menu = document.getElementById('notification-dropdown');
+    bell.addEventListener('click', () => {
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', (e) => {
+        if (!bell.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
+
+    // Handle styles for hover
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .hover-bg-light:hover { background-color: #f8fafc; }
+        .transition-all { transition: all 0.2s ease; }
+        .dropdown-item:hover { background-color: #f1f5f9; }
+    `;
+    document.head.appendChild(style);
+</script>
+

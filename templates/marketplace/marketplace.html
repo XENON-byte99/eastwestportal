@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace — EastWest Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .listing-card {
+        border-radius: 16px;
+        background: white;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(0,0,0,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .listing-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
+    
+    .listing-img-placeholder {
+        height: 180px;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+    }
+    
+    .listing-img {
+        height: 180px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .badge-price {
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary);
+        font-weight: 800;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 0.9rem;
+    }
+
+    .filter-pill {
+        padding: 8px 18px;
+        border-radius: 40px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <div class="icon-box" style="background: #fef3c7; color: #f59e0b; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="fas fa-store"></i>
+        </div>
+        <div>
+            <h4 class="fw-bold mb-0">Portal Marketplace</h4>
+            <p class="text-muted mb-0 small">Buy, sell, or exchange items within the EWU community</p>
+        </div>
+    </div>
+    <button class="premium-btn d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#postListingModal">
+        <i class="fas fa-plus-circle"></i> Post Listing
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="d-flex gap-2 mb-4 overflow-auto scrollbar-hidden pb-1">
+    <div class="filter-pill active" onclick="setFilter(this, 'all')">All Items</div>
+    <div class="filter-pill" onclick="setFilter(this, 'sell')">For Sale</div>
+    <div class="filter-pill" onclick="setFilter(this, 'buy')">Looking to Buy</div>
+    <div class="filter-pill" onclick="setFilter(this, 'exchange')">Exchange</div>
+</div>
+
+<div id="listings-grid" class="row g-4">
+    <!-- Listings will be injected here -->
+    <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+</div>
+
+<!-- Post Listing Modal -->
+<div class="modal fade" id="postListingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Post a New Listing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="postListingForm">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Item Name</label>
+                            <input type="text" name="item_name" class="form-control rounded-3" placeholder="e.g. Calculus Textbook, Scientific Calculator" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Price (BDT)</label>
+                            <input type="number" name="price" class="form-control rounded-3" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Type</label>
+                            <select name="listing_type" class="form-select rounded-3">
+                                <option value="sell">Sell</option>
+                                <option value="buy">Buy</option>
+                                <option value="exchange">Exchange</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Condition</label>
+                            <select name="condition" class="form-select rounded-3">
+                                <option value="like-new">Like New</option>
+                                <option value="good" selected>Good</option>
+                                <option value="fair">Fair</option>
+                                <option value="needs-repair">Needs Repair</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Contact Info</label>
+                            <input type="text" name="seller_contact" class="form-control rounded-3" placeholder="Phone or Email" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Description</label>
+                            <textarea name="description" class="form-control rounded-3" rows="3" placeholder="Tell us more about the item..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Item Image (Optional)</label>
+                            <input type="file" name="image" class="form-control rounded-3" accept="image/*">
+                        </div>
+                    </div>
+                </form>
+                <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                    <i class="fas fa-info-circle me-1"></i> 
+                    {% if user.role == 'faculty' %}
+                    As a faculty member, your listing will be **published immediately**.
+                    {% else %}
+                    Student listings require **admin approval** before appearing in the marketplace.
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 p-4">
+                <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" onclick="submitListing()" class="btn premium-btn px-4">Post Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentFilter = 'all';
+    let allListings = [];
+
+    async function loadListings() {
+        const grid = document.getElementById('listings-grid');
+        try {
+            const url = currentFilter === 'all' ? '{% url "marketplace:api_listings" %}' : `{% url "marketplace:api_listings" %}?type=${currentFilter}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            allListings = data.listings;
+            renderListings();
+        } catch (e) { console.error(e); }
+    }
+
+    function renderListings() {
+        const grid = document.getElementById('listings-grid');
+        if (allListings.length === 0) {
+            grid.innerHTML = `<div class="col-12 text-center py-5 text-muted">No items found in this category.</div>`;
+            return;
+        }
+
+        grid.innerHTML = allListings.map(l => `
+            <div class="col-md-6 col-xxl-4">
+                <div class="listing-card">
+                    ${l.image_url ? `<img src="${l.image_url}" class="listing-img" alt="${l.item_name}">` : `<div class="listing-img-placeholder"><i class="fas fa-box-open"></i></div>`}
+                    <div class="p-4 flex-grow-1 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold mb-0">${l.item_name}</h5>
+                            <span class="badge-price">${l.listing_type === 'Exchange' ? 'Exchange' : l.price + ' BDT'}</span>
+                        </div>
+                        <div class="d-flex gap-2 mb-3">
+                            <span class="badge bg-light text-muted border py-1" style="font-size: 0.7rem;">${l.condition}</span>
+                            <span class="badge bg-light text-muted border py-1" style="font-size: 0.7rem;">${l.listing_type}</span>
+                        </div>
+                        <p class="small text-muted flex-grow-1">${l.description || 'No description provided.'}</p>
+                        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                            <div class="small text-muted">
+                                <div class="fw-bold text-dark">${l.uploaded_by}</div>
+                                <div style="font-size: 0.75rem;">${l.created_at}</div>
+                            </div>
+                            <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" onclick="alert('Contact: ' + '${l.seller_contact}')">Contact</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function setFilter(btn, type) {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = type;
+        loadListings();
+    }
+
+    async function submitListing() {
+        const form = document.getElementById('postListingForm');
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('{% url "marketplace:api_listings" %}', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(result.error);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadListings);
+</script>
+{% endblock %}
