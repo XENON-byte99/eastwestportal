@@ -13,7 +13,14 @@ class EWUAccountAdapter(DefaultAccountAdapter):
     Restricts email/password signups to @ewubd.edu addresses.
     New accounts are created with is_approved=False and must be
     approved by admin before they can log in.
-    """
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip or '127.0.0.1'
+
 
     def clean_email(self, email):
         email = super().clean_email(email)
