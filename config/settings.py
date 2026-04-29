@@ -87,7 +87,9 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'core.middleware.ExemptCSRFMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+
 
 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
