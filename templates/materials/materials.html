@@ -44,11 +44,18 @@
     border-color: rgba(79, 70, 229, 0.25);
   }
   
-  .rating-stars { display: flex; gap: 2px; }
-  .rating-stars i { font-size: 0.75rem; color: #e2e8f0; cursor: pointer; transition: color 0.2s; }
+  .rating-stars { display: flex; gap: 4px; align-items: center; }
+  .rating-stars i { font-size: 0.9rem; color: #e2e8f0; cursor: pointer; transition: all 0.2s; }
   .rating-stars i.active { color: #fbbf24; }
-  .rating-stars i:hover { color: #fbbf24; }
+  
+  /* Hover effect: fill stars to the left */
+  .rating-stars:not(.readonly) i:hover,
+  .rating-stars:not(.readonly) i:hover ~ i { color: #fbbf24; opacity: 0.8; }
+  .rating-stars:not(.readonly):hover i { color: #fbbf24; }
+  .rating-stars:not(.readonly) i:hover ~ i { color: #e2e8f0; }
+
   .rating-stars.readonly i { cursor: default; }
+  .user-rating-label { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-top: 2px; }
 
   .icon-box-small { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: var(--primary); }
 
@@ -395,10 +402,11 @@
                     </td>
                     <td class="text-center">
                         <div class="d-flex flex-column align-items-center">
-                            <div class="rating-stars readonly" id="enrolled-rate-${m.id}">
-                                ${[1,2,3,4,5].map(i => `<i class="fas fa-star ${i <= Math.round(m.average_rating) ? 'active' : ''}"></i>`).join('')}
+                            <div class="rating-stars" id="enrolled-rate-${m.id}">
+                                ${[1,2,3,4,5].map(i => `<i class="fas fa-star ${i <= (m.user_rating || Math.round(m.average_rating)) ? 'active' : ''}" onclick="rateMaterial(${m.id}, ${i})"></i>`).join('')}
                             </div>
                             <span class="text-muted" style="font-size: 0.65rem;">${m.average_rating} (${m.rating_count})</span>
+                            ${m.user_rating ? `<div class="user-rating-label">Your Rating: ${m.user_rating}</div>` : ''}
                         </div>
                     </td>
                     <td>
@@ -572,9 +580,10 @@
                         <h6 class="fw-bold mb-0 text-truncate" title="${m.title}" style="font-size: 0.9rem;">${m.title}</h6>
                         <div class="d-flex flex-wrap gap-1 mt-1 align-items-center">
                             <div class="rating-stars me-2" id="rate-main-${m.id}">
-                                ${[1,2,3,4,5].map(i => `<i class="fas fa-star ${i <= Math.round(m.average_rating) ? 'active' : ''}" onclick="rateMaterial(${m.id}, ${i})"></i>`).join('')}
+                                ${[1,2,3,4,5].map(i => `<i class="fas fa-star ${i <= (m.user_rating || Math.round(m.average_rating)) ? 'active' : ''}" onclick="rateMaterial(${m.id}, ${i})"></i>`).join('')}
                             </div>
                             <span class="text-muted small" style="font-size: 0.65rem;">${m.average_rating} (${m.rating_count})</span>
+                            ${m.user_rating ? `<div class="user-rating-label ms-2">Rated ${m.user_rating}</div>` : ''}
                         </div>
                         <div class="d-flex flex-wrap gap-1 mt-1">
                             <span class="badge bg-light text-muted border" style="font-size: 0.68rem;">${m.type_name}</span>
@@ -743,18 +752,35 @@
         });
         const result = await response.json();
         if (response.ok) {
-            alert(result.message);
-            // Refresh the stars for this material
-            const stars = document.querySelectorAll(`#rate-main-${id} i`);
-            stars.forEach((star, idx) => {
-                if (idx < score) star.classList.add('active');
-                else star.classList.remove('active');
+            showToast(result.message);
+            
+            // Refresh stars in both possible locations
+            const starContainers = [`#rate-main-${id}`, `#enrolled-rate-${id}`];
+            starContainers.forEach(selector => {
+                const container = document.querySelector(selector);
+                if (container) {
+                    const stars = container.querySelectorAll('i');
+                    stars.forEach((star, idx) => {
+                        if (idx < score) star.classList.add('active');
+                        else star.classList.remove('active');
+                    });
+                    
+                    // Update stats text
+                    const statsSpan = container.nextElementSibling;
+                    if (statsSpan) statsSpan.innerText = `${result.average_rating} (${result.rating_count})`;
+                    
+                    // Update/Add "Your Rating" label
+                    let label = container.parentElement.querySelector('.user-rating-label');
+                    if (!label) {
+                        label = document.createElement('div');
+                        label.className = 'user-rating-label';
+                        container.parentElement.appendChild(label);
+                    }
+                    label.innerText = `Rated ${score}`;
+                }
             });
-            // Update the text
-            const text = document.querySelector(`#rate-main-${id} + span`);
-            if (text) text.innerText = `${result.average_rating} (${result.rating_count})`;
         } else {
-            alert(result.error);
+            showToast(result.error, 'danger');
         }
     } catch (e) { console.error(e); }
   }

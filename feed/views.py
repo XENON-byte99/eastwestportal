@@ -2,9 +2,8 @@ import json
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from .models import Post, Comment
+from .models import Post, Comment, PostLike
 from core.models import Notification
 
 
@@ -15,21 +14,23 @@ def index(request):
     return render(request, 'feed/feed.html', {'posts': posts})
 
 
+
 @login_required
-@csrf_exempt
-@login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST'])
 def api_posts(request):
     if request.method == 'GET':
         from core.models import Enrollment
         from django.db.models import Case, When, Value, IntegerField, Q
 
+        # Pagination
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('limit', 20))
+
         # Get enrolled course IDs for the current user
         enrolled_course_ids = Enrollment.objects.filter(student=request.user).values_list('course_id', flat=True)
 
         # Show approved posts OR user's own drafts
-        posts = Post.objects.filter(
+        all_posts = Post.objects.filter(
             Q(is_approved=True, is_draft=False) | Q(uploaded_by=request.user)
         ).annotate(
             priority=Case(
@@ -39,6 +40,12 @@ def api_posts(request):
                 output_field=IntegerField(),
             )
         ).prefetch_related('comments', 'uploaded_by').order_by('priority', '-created_at')
+
+        total = all_posts.count()
+        posts = all_posts[(page - 1) * per_page:page * per_page]
+
+        # Get user's liked post IDs for this page
+        user_liked_ids = set(PostLike.objects.filter(user=request.user, post__in=posts).values_list('post_id', flat=True))
 
         data = []
         for p in posts:
@@ -61,11 +68,12 @@ def api_posts(request):
                 'is_approved': p.is_approved,
                 'is_draft': p.is_draft,
                 'likes': p.likes,
+                'user_liked': p.id in user_liked_ids,
                 'comments': comments,
                 'can_delete': (p.uploaded_by == request.user or request.user.is_portal_admin),
                 'created_at': p.created_at.strftime("%b %d, %I:%M %p"),
             })
-        return JsonResponse({'posts': data})
+        return JsonResponse({'posts': data, 'has_more': (page * per_page) < total, 'total': total})
 
     # POST — create a new post
     try:
@@ -115,15 +123,19 @@ def api_posts(request):
     }, status=201)
 
 
+
 @login_required
-@csrf_exempt
 @require_http_methods(['POST'])
 def api_like_post(request, post_id):
     try:
         post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
+
+    like, created = PostLike.objects.get_or_create(post=post, user=request.user)
+    if created:
         post.likes += 1
         post.save()
-        
         if post.uploaded_by != request.user:
             Notification.objects.create(
                 recipient=post.uploaded_by,
@@ -133,14 +145,16 @@ def api_like_post(request, post_id):
                 message=f'{request.user.get_full_name() or request.user.email} liked your post.',
                 link='/feed/'
             )
-            
-        return JsonResponse({'likes': post.likes})
-    except Post.DoesNotExist:
-        return JsonResponse({'error': 'Not found'}, status=404)
+    else:
+        like.delete()
+        post.likes = max(0, post.likes - 1)
+        post.save()
+
+    return JsonResponse({'likes': post.likes, 'user_liked': created})
+
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST', 'PATCH', 'DELETE'])
 def api_post_detail(request, post_id):
     try:
@@ -210,7 +224,6 @@ def api_post_detail(request, post_id):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['POST'])
 def api_comments(request, post_id):
     try:
@@ -253,7 +266,6 @@ def api_comments(request, post_id):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['PATCH', 'DELETE'])
 def api_comment_detail(request, comment_id):
     try:

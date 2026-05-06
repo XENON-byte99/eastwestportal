@@ -4,47 +4,51 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">Moderation Queue</h2>
-            <p class="text-muted">Review and approve user-contributed content for the portal. Total Enrollments: <span class="fw-bold text-primary">{{ total_enrollments }}</span></p>
-
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div class="page-header mb-0">
+            <div class="header-icon" style="background: rgba(245,158,11,0.1); color: #d97706;">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-1">Moderation Queue</h4>
+                <p class="text-muted small mb-0">Review and approve user-contributed content. <span class="fw-bold text-primary">{{ total_enrollments }}</span> total enrollments.</p>
+            </div>
         </div>
-        <div class="badge bg-warning text-dark p-2 px-3 rounded-pill fw-bold" style="font-size: 1rem;">
-            {{ total_pending }} Pending Items
+        <div class="status-badge bg-amber-soft px-3 py-2" style="font-size: 0.85rem;">
+            <i class="fas fa-clock"></i> {{ total_pending }} Pending Items
         </div>
     </div>
 
     <!-- Tabs for different content types -->
-    <ul class="nav nav-pills mb-4 gap-2" id="modTabs" role="tablist">
+    <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto pb-1" id="modTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#posts" type="button">
-                Feed Posts <span class="badge bg-white text-primary ms-1">{{ pending_posts.count }}</span>
+            <button class="nav-link active rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#posts" type="button">
+                <i class="fas fa-rss"></i> Feed <span class="badge bg-white text-primary ms-1">{{ pending_posts.count }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#materials" type="button">
-                Materials <span class="badge bg-white text-primary ms-1">{{ pending_materials.count }}</span>
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#materials" type="button">
+                <i class="fas fa-book-open"></i> Materials <span class="badge bg-white text-primary ms-1">{{ pending_materials.count }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#listings" type="button">
-                Marketplace <span class="badge bg-white text-primary ms-1">{{ pending_listings.count }}</span>
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#listings" type="button">
+                <i class="fas fa-store"></i> Marketplace <span class="badge bg-white text-primary ms-1">{{ pending_listings.count }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#projects" type="button">
-                Projects/Papers <span class="badge bg-white text-primary ms-1">{{ pending_papers.count|add:pending_capstones.count }}</span>
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#projects" type="button">
+                <i class="fas fa-flask"></i> Projects <span class="badge bg-white text-primary ms-1">{{ pending_papers.count|add:pending_capstones.count }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-semibold bg-dark text-white" data-bs-toggle="pill" data-bs-target="#announcements" type="button">
-                <i class="fas fa-bullhorn me-1"></i> Announcements
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2 bg-dark text-white" data-bs-toggle="pill" data-bs-target="#announcements" type="button">
+                <i class="fas fa-bullhorn"></i> Announcements
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#enrollment-list" type="button">
-                <i class="fas fa-users me-1"></i> Enrollment Lists
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#enrollment-list" type="button">
+                <i class="fas fa-users"></i> Enrollments
             </button>
         </li>
     </ul>
@@ -74,16 +78,24 @@
                                     <a href="{% url 'core:reject_item' 'feed.Post' post.id %}" class="btn btn-outline-danger btn-sm px-3 rounded-pill fw-bold">Reject</a>
                                 </div>
                             </div>
-                            <p class="mb-0 text-dark bg-light p-3 rounded-3" style="white-space: pre-wrap;">{{ post.content }}</p>
+                            <p class="mb-3 text-dark bg-light p-3 rounded-3" style="white-space: pre-wrap;">{{ post.content }}</p>
+                            {% if post.media %}
+                            <div class="mb-0">
+                                <a href="{{ post.media.url }}" target="_blank">
+                                    <img src="{{ post.media.url }}" class="rounded-3 shadow-sm" style="max-height: 250px; width: 100%; object-fit: cover;">
+                                </a>
+                                <small class="text-muted d-block mt-1"><i class="fas fa-search-plus me-1"></i> Click to enlarge</small>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
-                    <h5 class="fw-bold">All caught up!</h5>
-                    <p class="text-muted mb-0">No pending posts to moderate.</p>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-check-circle text-success"></i></div>
+                    <h5>All caught up!</h5>
+                    <p>No pending posts to moderate.</p>
                 </div>
             {% endif %}
         </div>
@@ -173,10 +185,10 @@
                     </table>
                 </div>
             {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
-                    <h5 class="fw-bold">No Materials Pending</h5>
-                    <p class="text-muted mb-0">The academic library is up to date.</p>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-check-circle text-success"></i></div>
+                    <h5>No Materials Pending</h5>
+                    <p>The academic library is up to date.</p>
                 </div>
             {% endif %}
         </div>
@@ -192,7 +204,14 @@
                                 <h5 class="fw-bold mb-0 text-primary">{{ item.item_name }}</h5>
                                 <span class="badge bg-light text-dark border fw-bold">{{ item.price }} BDT</span>
                             </div>
-                            <p class="small text-muted flex-grow-1">{{ item.description }}</p>
+                            <p class="small text-muted mb-3">{{ item.description }}</p>
+                            {% if item.image %}
+                            <div class="mb-3">
+                                <a href="{{ item.image.url }}" target="_blank">
+                                    <img src="{{ item.image.url }}" class="rounded-3 shadow-sm" style="height: 150px; width: 100%; object-fit: cover;">
+                                </a>
+                            </div>
+                            {% endif %}
                             <hr class="my-3 opacity-10">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="small">
@@ -208,10 +227,10 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
-                    <h5 class="fw-bold">Marketplace is Clean</h5>
-                    <p class="text-muted mb-0">No new listings awaiting review.</p>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-check-circle text-success"></i></div>
+                    <h5>Marketplace is Clean</h5>
+                    <p>No new listings awaiting review.</p>
                 </div>
             {% endif %}
         </div>
@@ -259,8 +278,8 @@
                         <div class="card border-0 shadow-sm p-4">
                              <div class="d-flex justify-content-between align-items-center">
                                  <div>
-                                     <h6 class="fw-bold mb-0">{{ proj.project_title }}</h6>
-                                     <small class="text-muted">Batch {{ proj.batch_year }} — Submitted by {{ proj.uploaded_by.get_full_name }}</small>
+                                     <h6 class="fw-bold mb-0">{{ proj.title }}</h6>
+                                     <small class="text-muted">{{ proj.semester }} {{ proj.passing_year }} — Submitted by {{ proj.uploaded_by.get_full_name }}</small>
                                  </div>
                                  <div class="d-flex gap-2">
                                     <a href="{% url 'core:approve_item' 'projects.Capstone' proj.id %}" class="btn btn-success btn-sm px-3 rounded-pill">Approve Project</a>
@@ -274,10 +293,10 @@
             {% endif %}
             
             {% if not pending_papers and not pending_capstones %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-check-circle text-success fa-3x mb-3 opacity-50"></i>
-                    <h5 class="fw-bold">Research Portal Clear</h5>
-                    <p class="text-muted mb-0">No new academic projects to review.</p>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-check-circle text-success"></i></div>
+                    <h5>Research Portal Clear</h5>
+                    <p>No new academic projects to review.</p>
                 </div>
             {% endif %}
         </div>

@@ -31,3 +31,15 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.uploaded_by} on Post#{self.post_id}"
+
+
+class PostLike(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_likes')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user')
+
+    def __str__(self):
+        return f"{self.user} liked Post#{self.post_id}"

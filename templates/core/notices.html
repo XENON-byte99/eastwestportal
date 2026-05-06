@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Notices — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header mb-4">
+        <div class="header-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
+            <i class="fas fa-bullhorn"></i>
+        </div>
+        <div>
+            <h2 class="fw-bold mb-0">Announcements & Notices</h2>
+            <p class="text-muted mb-0">Stay updated with the latest portal-wide communications.</p>
+        </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        <a href="{% url 'core:notices' %}" class="btn {% if not selected_category %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-bold small">All</a>
+        <a href="{% url 'core:notices' %}?category=general" class="btn {% if selected_category == 'general' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-bold small">General</a>
+        <a href="{% url 'core:notices' %}?category=academic" class="btn {% if selected_category == 'academic' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-bold small">Academic</a>
+        <a href="{% url 'core:notices' %}?category=event" class="btn {% if selected_category == 'event' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-bold small">Events</a>
+        <a href="{% url 'core:notices' %}?category=urgent" class="btn {% if selected_category == 'urgent' %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill px-3 fw-bold small">Urgent</a>
+    </div>
+
+    <!-- Announcements List -->
+    {% if announcements %}
+    <div class="row g-3">
+        {% for a in announcements %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm p-4 rounded-4" style="{% if a.category == 'urgent' %}border-left: 4px solid #ef4444 !important;{% endif %}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="badge {% if a.category == 'urgent' %}bg-danger{% elif a.category == 'academic' %}bg-primary{% elif a.category == 'event' %}bg-warning text-dark{% else %}bg-secondary{% endif %} rounded-pill px-2 mb-2 small">
+                            {{ a.category|upper }}
+                        </span>
+                        <h5 class="fw-bold mb-1">{{ a.title }}</h5>
+                    </div>
+                    <small class="text-muted flex-shrink-0 ms-3" style="font-size: 0.75rem;">{{ a.created_at|timesince }} ago</small>
+                </div>
+                <p class="text-muted mb-2" style="white-space: pre-wrap;">{{ a.content }}</p>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.6rem;">
+                        {{ a.author.first_name|first }}{{ a.author.last_name|first }}
+                    </div>
+                    <small class="text-muted">{{ a.author.get_full_name }} — {{ a.created_at|date:"M d, Y" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+        <i class="fas fa-bullhorn fa-3x text-muted opacity-25 mb-3 d-block"></i>
+        <h5 class="fw-bold">No Announcements</h5>
+        <p class="text-muted mb-0">There are no announcements to display{% if selected_category %} for this category{% endif %}.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

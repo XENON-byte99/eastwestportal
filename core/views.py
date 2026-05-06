@@ -52,12 +52,35 @@ def is_staff(user):
 @login_required
 def home(request):
     """The separate Dashboard/Stats page."""
+    from itertools import chain
+    from operator import attrgetter
+    
+    # Collect recent approved items from all modules
+    recent_posts = Post.objects.filter(is_approved=True).order_by('-created_at')[:3]
+    recent_materials = Material.objects.filter(is_approved=True).order_by('-created_at')[:3]
+    recent_papers = Paper.objects.filter(is_approved=True).order_by('-created_at')[:3]
+    recent_capstones = Capstone.objects.filter(is_approved=True).order_by('-created_at')[:3]
+    
+    recent_uploads = []
+    for p in recent_posts:
+        recent_uploads.append({'title': p.content[:60], 'type': 'Feed Post', 'time': p.created_at, 'color': 'primary', 'url': '/feed/'})
+    for m in recent_materials:
+        recent_uploads.append({'title': m.title, 'type': f'{m.course.code} Material', 'time': m.created_at, 'color': 'info', 'url': '/materials/'})
+    for p in recent_papers:
+        recent_uploads.append({'title': p.title, 'type': 'Research Paper', 'time': p.created_at, 'color': 'success', 'url': '/projects/'})
+    for c in recent_capstones:
+        recent_uploads.append({'title': c.title, 'type': 'Capstone Project', 'time': c.created_at, 'color': 'warning', 'url': '/projects/'})
+    
+    recent_uploads.sort(key=lambda x: x['time'], reverse=True)
+    recent_uploads = recent_uploads[:6]
+    
     context = {
         'total_posts': Post.objects.filter(is_approved=True).count(),
         'total_materials': Material.objects.filter(is_approved=True).count(),
         'total_listings': Listing.objects.filter(status='active', is_approved=True).count(),
         'total_papers': Paper.objects.filter(is_approved=True).count(),
         'total_capstones': Capstone.objects.filter(is_approved=True).count(),
+        'recent_uploads': recent_uploads,
     }
     return render(request, 'core/home.html', context)
 
@@ -212,6 +235,45 @@ def global_search_api(request):
             'subtitle': f'{m.course.code} Material',
             'url': '/materials/',
             'icon': 'fa-book-open'
+        })
+
+    # 3. Search Research Papers
+    papers = Paper.objects.filter(
+        Q(title__icontains=query) | Q(field__icontains=query) | Q(faculty_name__icontains=query)
+    ).filter(is_approved=True)[:5]
+    for p in papers:
+        results.append({
+            'type': 'Research',
+            'title': p.title,
+            'subtitle': f'{p.semester} {p.passing_year} • {p.field}',
+            'url': '/projects/',
+            'icon': 'fa-microscope'
+        })
+
+    # 4. Search Capstone Projects
+    caps = Capstone.objects.filter(
+        Q(title__icontains=query) | Q(field__icontains=query) | Q(faculty_name__icontains=query)
+    ).filter(is_approved=True)[:5]
+    for c in caps:
+        results.append({
+            'type': 'Capstone',
+            'title': c.title,
+            'subtitle': f'Batch {c.passing_year} • {c.field}',
+            'url': '/projects/',
+            'icon': 'fa-graduation-cap'
+        })
+
+    # 5. Search Marketplace
+    items = Listing.objects.filter(
+        Q(item_name__icontains=query) | Q(description__icontains=query)
+    ).filter(is_approved=True, status='active')[:5]
+    for i in items:
+        results.append({
+            'type': 'Marketplace',
+            'title': i.item_name,
+            'subtitle': f'{i.price} BDT • {i.get_listing_type_display()}',
+            'url': '/marketplace/',
+            'icon': 'fa-store'
         })
 
     return JsonResponse({'results': results})
@@ -454,4 +516,46 @@ def my_uploads(request):
     }
     return render(request, 'core/my_uploads.html', context)
 
+
+@login_required
+def notices_view(request):
+    """Student-facing announcements page."""
+    from .models import Announcement
+    category = request.GET.get('category', '')
+    announcements = Announcement.objects.all().order_by('-created_at')
+    if category:
+        announcements = announcements.filter(category=category)
+    context = {
+        'announcements': announcements,
+        'selected_category': category,
+    }
+    return render(request, 'core/notices.html', context)
+
+
+@login_required
+def profile_view(request):
+    """User profile page with edit capability."""
+    if request.method == 'POST':
+        user = request.user
+        user.first_name = request.POST.get('first_name', user.first_name).strip()
+        user.last_name = request.POST.get('last_name', user.last_name).strip()
+        user.department = request.POST.get('department', user.department or '').strip()
+        user.whatsapp_number = request.POST.get('whatsapp_number', user.whatsapp_number or '').strip()
+        if 'profile_picture' in request.FILES:
+            user.profile_picture = request.FILES['profile_picture']
+        user.save()
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('core:profile')
+    
+    context = {
+        'user_posts': Post.objects.filter(uploaded_by=request.user).count(),
+        'user_materials': Material.objects.filter(uploaded_by=request.user).count(),
+        'user_papers': Paper.objects.filter(uploaded_by=request.user).count(),
+    }
+    return render(request, 'core/profile.html', context)
+
+
+def csrf_failure(request, reason=""):
+    """Custom CSRF failure view."""
+    return render(request, '403_csrf.html', {'reason': reason}, status=403)
 

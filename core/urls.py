@@ -9,6 +9,8 @@ urlpatterns = [
     path('pending/', views.pending_approval, name='pending_approval'),
     path('enrollment/', views.enrollment_view, name='enrollment'),
     path('my-uploads/', views.my_uploads, name='my_uploads'),
+    path('notices/', views.notices_view, name='notices'),
+    path('profile/', views.profile_view, name='profile'),
     path('logout/', views.logout_view, name='logout'),
 
     

@@ -16,15 +16,15 @@ class ResearchAreaAdmin(admin.ModelAdmin):
 
 @admin.register(Paper)
 class PaperAdmin(admin.ModelAdmin):
-    list_display = ('title', 'uploaded_by', 'research_area', 'publication_year', 'is_approved', 'created_at')
-    list_filter = ('is_approved', 'publication_year', 'research_area')
-    search_fields = ('title', 'authors', 'uploaded_by__email')
+    list_display = ('title', 'uploaded_by', 'field', 'passing_year', 'semester', 'is_approved', 'created_at')
+    list_filter = ('is_approved', 'passing_year', 'semester', 'research_area')
+    search_fields = ('title', 'authors', 'field', 'faculty_name', 'uploaded_by__email')
     list_editable = ('is_approved',)
 
 
 @admin.register(Capstone)
 class CapstoneAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'uploaded_by', 'batch_year', 'status', 'is_approved', 'created_at')
-    list_filter = ('is_approved', 'status', 'batch_year')
-    search_fields = ('project_title', 'team_members', 'uploaded_by__email')
+    list_display = ('title', 'uploaded_by', 'field', 'passing_year', 'semester', 'status', 'is_approved', 'created_at')
+    list_filter = ('is_approved', 'status', 'passing_year', 'semester')
+    search_fields = ('title', 'team_members', 'field', 'faculty_name', 'uploaded_by__email')
     list_editable = ('status', 'is_approved')

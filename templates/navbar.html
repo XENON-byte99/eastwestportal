@@ -1,23 +1,23 @@
-<nav class="navbar navbar-expand-lg sticky-top shadow-sm" style="background-color: white; border-bottom: 1px solid rgba(0,0,0,0.1); height: var(--navbar-height);">
-    <div class="container-fluid px-4">
+<nav class="navbar navbar-expand-lg sticky-top" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.06); height: var(--navbar-height); z-index: 1030;">
+    <div class="container-fluid px-3 px-md-4">
         <!-- Hamburger Button for Mobile -->
-        <button class="btn btn-light d-lg-none me-2 border-0 shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
-            <i class="fas fa-bars text-muted"></i>
+        <button class="btn d-lg-none me-2 border-0 p-0 d-flex align-items-center justify-content-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" style="width: 38px; height: 38px; background: #f1f5f9; border-radius: 10px;">
+            <i class="fas fa-bars text-muted" style="font-size: 0.9rem;"></i>
         </button>
 
         <!-- Brand -->
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'feed:index' %}" style="color: var(--primary);">
-            <div style="width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-university" style="color:#fff;font-size:.9rem;"></i>
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2 me-0" href="{% url 'feed:index' %}" style="color: var(--primary);">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow: 0 3px 10px rgba(79,70,229,0.25);">
+                <i class="fas fa-university" style="color:#fff;font-size:.85rem;"></i>
             </div>
-            <span class="d-none d-sm-inline">EastWest Portal</span>
+            <span class="d-none d-sm-inline" style="font-size: 0.95rem;">EastWest Portal</span>
         </a>
 
-        <!-- Search Bar -->
-        <div class="ms-3 d-none d-md-flex align-items-center" style="position: relative; max-width: 400px; width: 100%;">
-            <i class="fas fa-search" style="position: absolute; left: 14px; color: #94a3b8; font-size: 0.9rem;"></i>
+        <!-- Search Bar (Desktop) -->
+        <div class="ms-3 d-none d-md-flex align-items-center" style="position: relative; max-width: 380px; width: 100%;">
+            <i class="fas fa-search" style="position: absolute; left: 14px; color: #94a3b8; font-size: 0.85rem;"></i>
             <input type="text" id="global-search-input" placeholder="Search the community..." autocomplete="off"
-                   style="width: 100%; border: none; background: #f1f5f9; padding: 8px 16px 8px 40px; border-radius: 40px; font-size: 0.9rem; outline: none;">
+                   style="width: 100%; border: none; background: #f1f5f9; padding: 9px 16px 9px 40px; border-radius: 12px; font-size: 0.88rem; outline: none; transition: all 0.2s;" onfocus="this.style.background='#fff'; this.style.boxShadow='0 0 0 2px rgba(79,70,229,0.15)'" onblur="this.style.background='#f1f5f9'; this.style.boxShadow='none'">
             
             <!-- Search Results Dropdown -->
             <div id="search-results-dropdown" class="card shadow-lg border-0 mt-2 p-2 position-absolute" 
@@ -26,25 +26,30 @@
             </div>
         </div>
 
+        <!-- Mobile Search Toggle -->
+        <button class="btn d-md-none border-0 p-0 d-flex align-items-center justify-content-center ms-auto me-2" type="button" onclick="document.getElementById('mobile-search-bar').classList.toggle('d-none')" style="width: 38px; height: 38px; background: #f1f5f9; border-radius: 10px;">
+            <i class="fas fa-search text-muted" style="font-size: 0.85rem;"></i>
+        </button>
+
         <!-- Icons/User -->
-        <div class="d-flex align-items-center gap-3 ms-auto">
-            <a href="{% url 'feed:index' %}" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 40px; height: 40px; background: #f1f5f9; border: none;">
-                <i class="fas fa-home text-muted"></i>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <a href="{% url 'feed:index' %}" class="btn d-none d-sm-flex align-items-center justify-content-center p-0 border-0" style="width: 38px; height: 38px; background: #f1f5f9; border-radius: 10px;">
+                <i class="fas fa-home text-muted" style="font-size: 0.9rem;"></i>
             </a>
             <div class="dropdown">
-                <div class="btn btn-light rounded-circle d-flex align-items-center justify-content-center p-0 position-relative" 
+                <div class="btn d-flex align-items-center justify-content-center p-0 position-relative border-0" 
                      id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false"
-                     style="width: 40px; height: 40px; background: #f1f5f9; border: none; cursor: pointer;">
-                    <i class="fas fa-bell text-muted"></i>
-                    <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" 
-                          style="display: none; font-size: 0.6rem; padding: 0.35em 0.5em; margin-left: -8px; margin-top: 8px;">
+                     style="width: 38px; height: 38px; background: #f1f5f9; border-radius: 10px; cursor: pointer;">
+                    <i class="fas fa-bell text-muted" style="font-size: 0.9rem;"></i>
+                    <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white" 
+                          style="display: none; font-size: 0.58rem; padding: 0.3em 0.45em; margin-left: -8px; margin-top: 8px;">
                         0
                     </span>
                 </div>
                 <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" 
                      style="border-radius: 16px; min-width: 320px; max-height: 480px; overflow: hidden;" id="notification-dropdown">
                     <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold">Notifications</h6>
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-bell me-2 text-primary"></i>Notifications</h6>
                         <button class="btn btn-link btn-sm text-decoration-none p-0 small" onclick="markAllRead()" style="font-size: 0.75rem;">Mark all as read</button>
                     </div>
                     <div id="notification-list" style="max-height: 380px; overflow-y: auto;">
@@ -56,7 +61,7 @@
             
             <div class="dropdown">
                 <div class="d-flex align-items-center gap-2 cursor-pointer" data-bs-toggle="dropdown" style="cursor: pointer;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.75rem; box-shadow: 0 3px 10px rgba(79,70,229,0.25);">
                         {{ user.first_name|first }}{{ user.last_name|first }}
                     </div>
                 </div>
@@ -68,8 +73,8 @@
                         </div>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item rounded-3 py-2" href="{% url 'core:home' %}"><i class="fas fa-chart-line me-2 text-muted"></i>Dashboard</a></li>
-                    <li><a class="dropdown-item rounded-3 py-2" href="#"><i class="fas fa-user me-2 text-muted"></i>Profile Settings</a></li>
+                    <li><a class="dropdown-item rounded-3 py-2" href="{% url 'core:home' %}"><i class="fas fa-chart-line me-2 text-primary"></i>Dashboard</a></li>
+                    <li><a class="dropdown-item rounded-3 py-2" href="{% url 'core:profile' %}"><i class="fas fa-user me-2 text-muted"></i>Profile Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item rounded-3 py-2 text-danger" href="{% url 'core:logout' %}"><i class="fas fa-right-from-bracket me-2"></i>Log Out</a></li>
                 </ul>
@@ -78,29 +83,43 @@
     </div>
 </nav>
 
+<!-- Mobile Search Bar (Hidden by default) -->
+<div id="mobile-search-bar" class="d-none d-md-none bg-white border-bottom px-3 py-2" style="position: relative;">
+    <div style="position: relative;">
+        <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
+        <input type="text" id="mobile-search-input" placeholder="Search..." autocomplete="off"
+               style="width: 100%; border: none; background: #f1f5f9; padding: 10px 16px 10px 40px; border-radius: 12px; font-size: 0.88rem; outline: none;">
+    </div>
+    <div id="mobile-search-results" class="card shadow-lg border-0 mt-2 p-2 position-absolute" 
+         style="left: 12px; right: 12px; border-radius: 16px; display: none; z-index: 1050; max-height: 400px; overflow-y: auto;">
+        <div id="mobile-search-list"></div>
+    </div>
+</div>
+
+
 <script>
     const searchInput = document.getElementById('global-search-input');
     const searchDropdown = document.getElementById('search-results-dropdown');
     const searchList = document.getElementById('search-results-list');
+    const mobileInput = document.getElementById('mobile-search-input');
+    const mobileDropdown = document.getElementById('mobile-search-results');
+    const mobileList = document.getElementById('mobile-search-list');
     let searchTimeout = null;
 
-    searchInput.addEventListener('input', (e) => {
+    function performSearch(query, resultList, dropdown) {
         clearTimeout(searchTimeout);
-        const query = e.target.value.trim();
-        
         if (query.length < 2) {
-            searchDropdown.style.display = 'none';
+            dropdown.style.display = 'none';
             return;
         }
-
         searchTimeout = setTimeout(async () => {
             const res = await fetch(`{% url 'core:global_search_api' %}?q=${encodeURIComponent(query)}`);
             const data = await res.json();
             
             if (data.results.length === 0) {
-                searchList.innerHTML = '<div class="p-3 text-center text-muted small">No results matching "' + query + '"</div>';
+                resultList.innerHTML = '<div class="p-3 text-center text-muted small">No results matching "' + query + '"</div>';
             } else {
-                searchList.innerHTML = data.results.map(r => `
+                resultList.innerHTML = data.results.map(r => `
                     <a href="${r.url}" class="d-flex align-items-center gap-3 p-2 rounded-3 text-decoration-none hover-bg-light transition-all" style="color: inherit;">
                         <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i class="fas ${r.icon} text-muted" style="font-size: 0.8rem;"></i>
@@ -112,13 +131,19 @@
                     </a>
                 `).join('');
             }
-            searchDropdown.style.display = 'block';
+            dropdown.style.display = 'block';
         }, 300);
-    });
+    }
+
+    searchInput.addEventListener('input', (e) => performSearch(e.target.value.trim(), searchList, searchDropdown));
+    mobileInput.addEventListener('input', (e) => performSearch(e.target.value.trim(), mobileList, mobileDropdown));
 
     document.addEventListener('click', (e) => {
         if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
             searchDropdown.style.display = 'none';
+        }
+        if (!mobileInput.contains(e.target) && !mobileDropdown.contains(e.target)) {
+            mobileDropdown.style.display = 'none';
         }
     });
 

@@ -1,11 +1,11 @@
-django
-python-dotenv
-django-allauth
-requests
-cryptography
-PyJWT
-Pillow
+Django==6.0.4
+python-dotenv==1.2.2
+django-allauth==65.16.1
+requests==2.33.1
+cryptography==46.0.7
+PyJWT==2.12.1
+pillow==12.2.0
 # Production
 gunicorn
-whitenoise
+whitenoise==6.12.0
 mysqlclient

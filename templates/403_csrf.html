@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Session Expired — EastWest Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center" style="max-width: 500px;">
+        <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 20px;">
+            <i class="fas fa-shield-halved"></i>
+        </div>
+        <h3 class="fw-bold mb-3">Session Expired</h3>
+        <p class="text-muted mb-4">Your session has expired or your browser blocked a security token. Please refresh the page and try again.</p>
+        {% if reason %}
+        <div class="alert alert-danger small mb-4 text-start">
+            <strong>Technical Details:</strong> {{ reason }}
+        </div>
+        {% endif %}
+        <div class="d-flex gap-3 justify-content-center">
+            <button onclick="window.history.back()" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">Go Back</button>
+            <a href="{% url 'core:home' %}" class="btn btn-primary rounded-pill px-4 fw-bold">Go to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

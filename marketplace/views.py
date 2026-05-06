@@ -13,7 +13,6 @@ def index(request):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST'])
 def api_listings(request):
     if request.method == 'GET':
@@ -106,7 +105,6 @@ def api_listings(request):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST', 'PATCH', 'DELETE'])
 def api_listing_detail(request, listing_id):
     try:
@@ -121,8 +119,8 @@ def api_listing_detail(request, listing_id):
             'uploaded_by': listing.uploaded_by.email, 
             'seller_contact': listing.seller_contact,
             'price': str(listing.price), 
-            'condition': listing.get_condition_display(),
-            'listing_type': listing.get_listing_type_display(), 
+            'condition': listing.condition,
+            'listing_type': listing.listing_type, 
             'description': listing.description,
             'status': listing.status,
             'image_url': listing.image.url if listing.image else None
@@ -131,13 +129,22 @@ def api_listing_detail(request, listing_id):
     if request.method in ['POST', 'PATCH']:
         if listing.uploaded_by == request.user or request.user.is_portal_admin:
             try:
-                body = json.loads(request.body)
-                if 'status' in body:
-                    listing.status = body['status']
+                if request.content_type == 'application/json':
+                    body = json.loads(request.body)
+                else:
+                    body = request.POST
+
                 if 'item_name' in body: listing.item_name = body['item_name']
                 if 'price' in body: listing.price = body['price']
                 if 'description' in body: listing.description = body['description']
                 if 'seller_contact' in body: listing.seller_contact = body['seller_contact']
+                if 'condition' in body: listing.condition = body['condition']
+                if 'listing_type' in body: listing.listing_type = body['listing_type']
+                if 'status' in body: listing.status = body['status']
+                
+                # Handle Image
+                if request.FILES.get('image'):
+                    listing.image = request.FILES.get('image')
                 
                 # Allow staff to approve
                 if 'is_approved' in body and request.user.is_portal_admin:
@@ -146,9 +153,8 @@ def api_listing_detail(request, listing_id):
                 
                 listing.save()
                 return JsonResponse({'status': 'updated', 'is_approved': listing.is_approved})
-
-            except Exception:
-                return JsonResponse({'error': 'Invalid data'}, status=400)
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=400)
         return JsonResponse({'error': 'Unauthorized'}, status=403)
 
     if request.method == 'DELETE':
@@ -159,7 +165,7 @@ def api_listing_detail(request, listing_id):
 
 
 @login_required
-@csrf_exempt
+
 @require_http_methods(['GET', 'POST'])
 def api_chat(request, listing_id):
     try:

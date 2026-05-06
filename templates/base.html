@@ -19,12 +19,17 @@
         :root {
             --primary: #4f46e5;
             --primary-hover: #4338ca;
+            --primary-light: rgba(79, 70, 229, 0.08);
             --bg-body: #f1f5f9;
             --bg-card: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --navbar-height: 56px;
-            --sidebar-width: 280px;
+            --navbar-height: 60px;
+            --sidebar-width: 270px;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
         }
 
         body {
@@ -34,17 +39,16 @@
             overflow-x: hidden;
         }
 
-        /* Layout Grid */
+        /* ─── Layout Grid ─── */
         .portal-layout {
             display: grid;
-            grid-template-columns: var(--sidebar-width) 1fr 340px;
+            grid-template-columns: var(--sidebar-width) 1fr 320px;
             gap: 24px;
             padding: 24px;
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
         }
 
-        /* Responsive Grid */
         @media (max-width: 1200px) {
             .portal-layout {
                 grid-template-columns: var(--sidebar-width) 1fr;
@@ -55,23 +59,25 @@
         @media (max-width: 768px) {
             .portal-layout {
                 grid-template-columns: 1fr;
-                padding: 12px;
+                padding: 10px;
+                gap: 16px;
             }
             .left-sidebar { display: none; }
         }
 
-        /* Sidebar Styling */
+        /* ─── Sidebar ─── */
         .sidebar {
             position: sticky;
             top: 24px;
             height: calc(100vh - 48px);
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.08) transparent;
         }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 4px; }
 
-        .nav-card {
-            background: transparent;
-            border: none;
-        }
+        .nav-card { background: transparent; border: none; }
 
         .nav-link-portal {
             display: flex;
@@ -82,58 +88,183 @@
             color: var(--text-main);
             text-decoration: none;
             font-weight: 500;
-            transition: all 0.2s;
-            margin-bottom: 4px;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+            font-size: 0.9rem;
         }
-
         .nav-link-portal:hover {
-            background-color: rgba(79, 70, 229, 0.08);
+            background-color: var(--primary-light);
             color: var(--primary);
+            transform: translateX(4px);
         }
-
         .nav-link-portal.active {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
             color: white !important;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
         }
-
         .nav-link-portal i {
             width: 20px;
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
-        /* Card Styling */
+        /* ─── Cards ─── */
         .card {
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.04);
             border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s ease;
         }
 
         .premium-btn {
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
             color: white;
             border: none;
-            border-radius: 10px;
-            padding: 10px 20px;
+            border-radius: 12px;
+            padding: 10px 22px;
             font-weight: 600;
-            transition: opacity 0.2s;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
         }
-
         .premium-btn:hover {
-            opacity: 0.9;
+            opacity: 0.92;
             color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
         }
 
-        /* Feed Specific */
-        .feed-container {
-            max-width: 680px;
-            margin: 0 auto;
+        /* ─── Page Header ─── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .page-header .header-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .page-header h4, .page-header h2 { margin-bottom: 2px; }
+        .page-header p { margin-bottom: 0; }
+
+        @media (max-width: 576px) {
+            .page-header { flex-direction: column; text-align: center; gap: 10px; }
+            .page-header .header-icon { width: 44px; height: 44px; font-size: 1.1rem; }
         }
 
-        /* Toast Notifications */
-        .toast-container {
-            z-index: 10000;
+        /* ─── Icon Circle (reusable icon container) ─── */
+        .icon-circle {
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 14px; flex-shrink: 0;
         }
+        .icon-circle-sm { width: 36px; height: 36px; font-size: 0.9rem; }
+        .icon-circle-md { width: 48px; height: 48px; font-size: 1.15rem; }
+        .icon-circle-lg { width: 56px; height: 56px; font-size: 1.4rem; }
+        .icon-circle-xl { width: 68px; height: 68px; font-size: 1.8rem; border-radius: 18px; }
+
+        /* ─── Stat Card ─── */
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: all 0.25s ease;
+            height: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .stat-card .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .stat-card .stat-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ─── Empty State ─── */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            background: white;
+            border-radius: 20px;
+            border: 2px dashed rgba(0,0,0,0.08);
+        }
+        .empty-state .empty-icon {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: var(--bg-body);
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+            font-size: 1.8rem;
+            color: #94a3b8;
+        }
+        .empty-state h5 { font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+        .empty-state p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0; }
+
+        /* ─── Section Label ─── */
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+        .section-label i { font-size: 0.7rem; }
+
+        /* ─── Badge Utilities ─── */
+        .bg-purple-soft { background-color: rgba(139, 92, 246, 0.1) !important; color: #8b5cf6 !important; }
+        .bg-indigo-soft { background-color: rgba(79, 70, 229, 0.1) !important; color: #4f46e5 !important; }
+        .bg-green-soft { background-color: rgba(16, 185, 129, 0.08) !important; color: #059669 !important; }
+        .bg-red-soft { background-color: rgba(239, 68, 68, 0.08) !important; color: #dc2626 !important; }
+        .bg-amber-soft { background-color: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; }
+        .bg-blue-soft { background-color: rgba(59, 130, 246, 0.08) !important; color: #2563eb !important; }
+        .bg-cyan-soft { background-color: rgba(6, 182, 212, 0.08) !important; color: #0891b2 !important; }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600;
+        }
+        .status-badge i { font-size: 0.55rem; }
+
+        /* ─── Rounded Utilities ─── */
+        .rounded-4 { border-radius: 1.25rem !important; }
+        .rounded-5 { border-radius: 1.5rem !important; }
+
+        /* ─── Animations ─── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(79,70,229,0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(79,70,229,0); }
+            100% { box-shadow: 0 0 0 0 rgba(79,70,229,0); }
+        }
+        .animate-fade-in { animation: fadeInUp 0.4s ease-out both; }
+        .animate-pulse-ring { animation: pulse-ring 2s infinite; }
+
+        /* ─── Feed ─── */
+        .feed-container { max-width: 680px; margin: 0 auto; }
+
+        /* ─── Toast Notifications ─── */
+        .toast-container { z-index: 10000; }
         .premium-toast {
             min-width: 320px;
             border: none;
@@ -142,6 +273,39 @@
             margin-bottom: 12px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+
+        /* ─── Nav Pills Enhancement ─── */
+        .nav-pills .nav-link {
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        /* ─── Mobile Helpers ─── */
+        @media (max-width: 576px) {
+            .stat-card { padding: 16px; }
+            .stat-card .stat-value { font-size: 1.4rem; }
+            .premium-btn { padding: 8px 16px; font-size: 0.85rem; }
+            h2.fw-bold { font-size: 1.3rem; }
+            h4.fw-bold { font-size: 1.15rem; }
+            .nav-pills { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .nav-pills .nav-link { white-space: nowrap; font-size: 0.8rem; }
+            .modal-dialog { margin: 8px; }
+        }
+
+        /* ─── Table Enhancement ─── */
+        .table thead th {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            border-bottom: 2px solid rgba(0,0,0,0.06);
+        }
+        .table tbody tr { transition: background 0.15s ease; }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -293,6 +457,27 @@
                 }
             }
         });
+        // ── Web Push Notification Setup ───────────────────────────────────────────
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/js/sw.js')
+                    .then(reg => {
+                        console.log('Service Worker registered successfully');
+                        // Optional: ask for permission immediately or via a button
+                        // requestNotificationPermission();
+                    })
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+
+        async function requestNotificationPermission() {
+            if (Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    showToast('Notifications enabled! You will now receive updates even when offline.', 'success');
+                }
+            }
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>

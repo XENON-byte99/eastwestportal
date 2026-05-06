@@ -3,51 +3,75 @@
 {% block title %}My Uploads — EastWest Portal{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">My Submission History</h2>
-            <p class="text-muted">Track the status of your contributions and manage your uploads.</p>
+<div class="container-fluid py-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div class="page-header mb-0">
+            <div class="header-icon" style="background: rgba(37,99,235,0.1); color: #2563eb;">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-1">My Submission History</h4>
+                <p class="text-muted small mb-0">Track the status of your contributions and manage your uploads.</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'feed:index' %}" class="btn premium-btn rounded-pill"><i class="fas fa-plus me-2"></i>New Post</a>
-        </div>
+        <a href="{% url 'feed:index' %}" class="btn premium-btn rounded-pill d-flex align-items-center gap-2">
+            <i class="fas fa-plus"></i><span>New Post</span>
+        </a>
     </div>
 
     <!-- Summary Stats -->
-    <div class="row g-3 mb-4 text-center">
-        <div class="col-md-3">
-            <div class="card p-3 border-0 shadow-sm rounded-4">
-                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Total Submissions</small>
-                <h3 class="fw-bold mb-0 text-primary">{{ posts.count|add:materials.count|add:listings.count|add:papers.count|add:capstones.count }}</h3>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="icon-circle icon-circle-md mx-auto mb-2 bg-indigo-soft"><i class="fas fa-layer-group"></i></div>
+                <div class="stat-value text-primary">{{ posts.count|add:materials.count|add:listings.count|add:papers.count|add:capstones.count }}</div>
+                <div class="stat-label">Total Submissions</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card p-3 border-0 shadow-sm rounded-4">
-                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Approved</small>
-                <h3 class="fw-bold mb-0 text-success">
-                    {% with approved_count=0 %}
-                        {# This is a bit complex in template, but simple for now #}
-                        Auto-calculated in logic
-                    {% endwith %}
-                </h3>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="icon-circle icon-circle-md mx-auto mb-2 bg-green-soft"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-value text-success">—</div>
+                <div class="stat-label">Approved</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="icon-circle icon-circle-md mx-auto mb-2 bg-amber-soft"><i class="fas fa-clock"></i></div>
+                <div class="stat-value" style="color: #d97706;">—</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="icon-circle icon-circle-md mx-auto mb-2 bg-blue-soft"><i class="fas fa-file-alt"></i></div>
+                <div class="stat-value" style="color: #2563eb;">{{ papers.count|add:capstones.count }}</div>
+                <div class="stat-label">Research</div>
             </div>
         </div>
     </div>
 
     <!-- Content Tabs -->
-    <ul class="nav nav-pills mb-4 gap-2" id="uploadTabs" role="tablist">
+    <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto pb-1" id="uploadTabs" role="tablist">
         <li class="nav-item">
-            <button class="nav-link active rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-posts">Posts</button>
+            <button class="nav-link active rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#tab-posts">
+                <i class="fas fa-rss"></i> Posts
+            </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-materials">Materials</button>
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#tab-materials">
+                <i class="fas fa-book-open"></i> Materials
+            </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-marketplace">Marketplace</button>
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#tab-marketplace">
+                <i class="fas fa-store"></i> Marketplace
+            </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link rounded-pill fw-semibold" data-bs-toggle="pill" data-bs-target="#tab-projects">Research/Capstone</button>
+            <button class="nav-link rounded-pill fw-semibold d-flex align-items-center gap-2" data-bs-toggle="pill" data-bs-target="#tab-projects">
+                <i class="fas fa-flask"></i> Research
+            </button>
         </li>
     </ul>
 
@@ -80,10 +104,10 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-rss fa-3x mb-3 text-muted opacity-25"></i>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-rss"></i></div>
                     <h5>No posts yet</h5>
-                    <p class="text-muted small mb-0">Share your thoughts on the news feed!</p>
+                    <p>Share your thoughts on the news feed!</p>
                 </div>
             {% endif %}
         </div>
@@ -124,10 +148,10 @@
                     </table>
                 </div>
             {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-book-open fa-3x mb-3 text-muted opacity-25"></i>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-book-open"></i></div>
                     <h5>No academic materials</h5>
-                    <p class="text-muted small mb-0">Contribute to the library to help others!</p>
+                    <p>Contribute to the library to help others!</p>
                 </div>
             {% endif %}
         </div>
@@ -161,10 +185,10 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-store fa-3x mb-3 text-muted opacity-25"></i>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-store"></i></div>
                     <h5>No listings</h5>
-                    <p class="text-muted small mb-0">Sell your unused books or gadgets here.</p>
+                    <p>Sell your unused books or gadgets here.</p>
                 </div>
             {% endif %}
         </div>
@@ -179,7 +203,7 @@
                                 <div>
                                     <span class="badge bg-purple-soft text-purple rounded-pill mb-2">Research Paper</span>
                                     <h6 class="fw-bold mb-1">{{ paper.title }}</h6>
-                                    <small class="text-muted">Approved: {% if paper.is_approved %}Yes{% else %}No{% endif %}</small>
+                                    <small class="text-muted">{{ paper.semester }} {{ paper.passing_year }} • Approved: {% if paper.is_approved %}Yes{% else %}No{% endif %}</small>
                                 </div>
                                 <button onclick="deletePaper({{ paper.id }})" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete Paper"><i class="fas fa-trash"></i></button>
                             </div>
@@ -190,8 +214,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="badge bg-indigo-soft text-indigo rounded-pill mb-2">Capstone Project</span>
-                                    <h6 class="fw-bold mb-1">{{ cap.project_title }}</h6>
-                                    <small class="text-muted">Approved: {% if cap.is_approved %}Yes{% else %}No{% endif %}</small>
+                                    <h6 class="fw-bold mb-1">{{ cap.title }}</h6>
+                                    <small class="text-muted">{{ cap.semester }} {{ cap.passing_year }} • Approved: {% if cap.is_approved %}Yes{% else %}No{% endif %}</small>
                                 </div>
                                 <button onclick="deleteCapstone({{ cap.id }})" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete Capstone"><i class="fas fa-trash"></i></button>
                             </div>
@@ -199,10 +223,10 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <i class="fas fa-flask fa-3x mb-3 text-muted opacity-25"></i>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-flask"></i></div>
                     <h5>No research projects</h5>
-                    <p class="text-muted small mb-0">Showcase your academic achievements.</p>
+                    <p>Showcase your academic achievements.</p>
                 </div>
             {% endif %}
         </div>

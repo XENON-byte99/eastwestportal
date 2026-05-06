@@ -37,7 +37,6 @@ def manage_material_types(request):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST', 'PATCH', 'DELETE'])
 @user_passes_test(is_staff)
 def api_course_manage(request, course_id=None):
@@ -96,7 +95,6 @@ def api_course_manage(request, course_id=None):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST', 'PATCH', 'DELETE'])
 @user_passes_test(is_staff)
 def api_material_type_manage(request, type_id=None):
@@ -149,7 +147,6 @@ def api_material_type_manage(request, type_id=None):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST'])
 def api_materials(request):
     if request.method == 'GET':
@@ -190,6 +187,11 @@ def api_materials(request):
         if type_id:
             qs = qs.filter(material_type_id=type_id)
 
+        # Get current user's ratings for these materials
+        user_ratings = {}
+        if request.user.is_authenticated:
+            user_ratings = {r.material_id: r.score for r in MaterialRating.objects.filter(user=request.user, material__in=qs)}
+
         data = [{
             'id': m.id,
             'course_id': m.course.id,
@@ -218,6 +220,7 @@ def api_materials(request):
             'average_rating': round(m.average_rating, 1),
             'rating_count': m.rating_count,
             'uploaded_by': m.uploaded_by.get_full_name() or m.uploaded_by.email,
+            'user_rating': user_ratings.get(m.id, 0),
             'can_edit': (m.uploaded_by == request.user or request.user.is_portal_admin),
 
         } for m in qs]
@@ -316,7 +319,6 @@ def api_materials(request):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['GET', 'POST', 'PATCH', 'DELETE'])
 
 def api_material_detail(request, material_id):
@@ -444,7 +446,6 @@ def api_courses(request):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(['POST'])
 def api_rate_material(request, material_id):
     try:
@@ -469,7 +470,6 @@ def api_rate_material(request, material_id):
         return JsonResponse({'error': 'Invalid data'}, status=400)
 
 @login_required
-@csrf_exempt
 @require_http_methods(['DELETE'])
 def api_attachment_delete(request, attachment_id):
     try:

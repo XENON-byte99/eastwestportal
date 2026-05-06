@@ -59,9 +59,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center gap-3">
-        <div class="icon-box" style="background: #dcfce7; color: #16a34a; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div class="page-header mb-0">
+        <div class="header-icon" style="background: rgba(16,185,129,0.1); color: #059669;">
             <i class="fas fa-microscope"></i>
         </div>
         <div>
@@ -69,20 +69,59 @@
             <p class="text-muted mb-0 small">Repository of EWU's scholarly contributions</p>
         </div>
     </div>
-    <div class="d-flex gap-2">
-        <button class="btn btn-outline-primary rounded-pill px-3 fw-bold small" data-bs-toggle="modal" data-bs-target="#submitPaperModal">
-            <i class="fas fa-file-export me-1"></i> Submit Paper
+    <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-primary rounded-pill px-3 fw-bold small d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#submitPaperModal">
+            <i class="fas fa-file-export"></i> <span class="d-none d-sm-inline">Submit</span> Paper
         </button>
         <button class="premium-btn d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#submitCapstoneModal">
-            <i class="fas fa-graduation-cap"></i> Submit Capstone
+            <i class="fas fa-graduation-cap"></i> <span class="d-none d-sm-inline">Submit</span> Capstone
         </button>
     </div>
 </div>
 
 <!-- Section Switcher -->
 <div class="d-flex gap-4 border-bottom mb-4">
-    <div id="tab-research" class="nav-pill-custom active" onclick="switchSection('research')">Research Areas</div>
-    <div id="tab-capstone" class="nav-pill-custom" onclick="switchSection('capstone')">Capstone Projects</div>
+    <div id="tab-research" class="nav-pill-custom active" onclick="switchSection('research')"><i class="fas fa-flask me-1 d-none d-sm-inline"></i>Research Areas</div>
+    <div id="tab-capstone" class="nav-pill-custom" onclick="switchSection('capstone')"><i class="fas fa-graduation-cap me-1 d-none d-sm-inline"></i>Capstone Projects</div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="row g-2 mb-4 align-items-end p-3 bg-white shadow-sm rounded-4 border mx-0">
+    <div class="col-12 col-md-4">
+        <label class="form-label small fw-bold text-muted mb-1"><i class="fas fa-search me-1"></i> Quick Search</label>
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted small"></i></span>
+            <input type="text" id="project-search" class="form-control border-start-0 ps-0" placeholder="Title, author, faculty..." onkeyup="handleSearch(event)">
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold text-muted mb-1">Field</label>
+        <input type="text" id="filter-field" class="form-control" placeholder="e.g. AI, Web" onkeyup="handleSearch(event)">
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold text-muted mb-1">Year</label>
+        <select id="filter-year" class="form-select" onchange="applyFilters()">
+            <option value="">All Years</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold text-muted mb-1">Semester</label>
+        <select id="filter-semester" class="form-select" onchange="applyFilters()">
+            <option value="">All Semesters</option>
+            <option value="Spring">Spring</option>
+            <option value="Summer">Summer</option>
+            <option value="Fall">Fall</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-2 d-flex gap-1">
+        <button class="btn btn-primary flex-grow-1 fw-bold rounded-3" onclick="applyFilters()"><i class="fas fa-filter me-1 d-md-none"></i><span class="d-none d-md-inline">Filter</span><span class="d-md-none">Go</span></button>
+        <button class="btn btn-outline-secondary rounded-3" onclick="resetFilters()" title="Reset"><i class="fas fa-undo"></i></button>
+    </div>
 </div>
 
 <!-- Research Section -->
@@ -138,35 +177,56 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="submitPaperForm">
+                <form id="submitPaperForm" enctype="multipart/form-data">
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label small fw-bold">Research Area</label>
+                            <label class="form-label small fw-bold">Paper Title</label>
+                            <input type="text" name="title" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Field / Category</label>
+                            <input type="text" name="field" class="form-control rounded-3" placeholder="e.g. Machine Learning">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Research Area (Optional)</label>
                             <select name="research_area_id" class="form-select rounded-3">
+                                <option value="">-- Select Category --</option>
                                 {% for area in areas %}
                                 <option value="{{ area.id }}">{{ area.research_area }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="col-12">
-                            <label class="form-label small fw-bold">Paper Title</label>
-                            <input type="text" name="title" class="form-control rounded-3" required>
-                        </div>
-                        <div class="col-12">
                             <label class="form-label small fw-bold">Authors</label>
                             <input type="text" name="authors" class="form-control rounded-3" placeholder="Names of authors" required>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Publication Year</label>
-                            <input type="number" name="publication_year" class="form-control rounded-3" value="2024">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Faculty Name / Supervisor</label>
+                            <input type="text" name="faculty_name" class="form-control rounded-3" placeholder="Supervising faculty">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Passing Year</label>
+                            <input type="number" name="passing_year" class="form-control rounded-3" value="2024">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold">Semester</label>
+                            <select name="semester" class="form-select rounded-3">
+                                <option value="Spring">Spring</option>
+                                <option value="Summer">Summer</option>
+                                <option value="Fall">Fall</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">PDF URL</label>
+                            <label class="form-label small fw-bold">PDF Upload</label>
+                            <input type="file" name="pdf_file" class="form-control rounded-3" accept=".pdf">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">PDF Link (URL)</label>
                             <input type="url" name="pdf_link" class="form-control rounded-3" placeholder="https://...">
                         </div>
                         <div class="col-12">
-                            <label class="form-label small fw-bold">Abstract</label>
-                            <textarea name="abstract" class="form-control rounded-3" rows="3"></textarea>
+                            <label class="form-label small fw-bold">Description / Abstract</label>
+                            <textarea name="description" class="form-control rounded-3" rows="3"></textarea>
                         </div>
                     </div>
                 </form>
@@ -190,23 +250,47 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="submitCapstoneForm">
+                <form id="submitCapstoneForm" enctype="multipart/form-data">
                     <div class="row g-3">
-                        <div class="col-md-8">
+                        <div class="col-12">
                             <label class="form-label small fw-bold">Project Title</label>
-                            <input type="text" name="project_title" class="form-control rounded-3" required>
+                            <input type="text" name="title" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Field / Category</label>
+                            <input type="text" name="field" class="form-control rounded-3" placeholder="e.g. Web Development, Robotics...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Faculty Name / Supervisor</label>
+                            <input type="text" name="faculty_name" class="form-control rounded-3" placeholder="Supervising faculty">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Batch Year</label>
-                            <input type="number" name="batch_year" class="form-control rounded-3" value="2024">
+                            <label class="form-label small fw-bold">Passing Year</label>
+                            <input type="number" name="passing_year" class="form-control rounded-3" value="2024">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold">Semester</label>
+                            <select name="semester" class="form-select rounded-3">
+                                <option value="Spring">Spring</option>
+                                <option value="Summer">Summer</option>
+                                <option value="Fall">Fall</option>
+                            </select>
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Team Members</label>
                             <textarea name="team_members" class="form-control rounded-3" rows="1" placeholder="Names, IDs..."></textarea>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">PDF Upload</label>
+                            <input type="file" name="pdf_file" class="form-control rounded-3" accept=".pdf">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">PDF Link (URL)</label>
+                            <input type="url" name="pdf_link" class="form-control rounded-3" placeholder="https://...">
+                        </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Project Description</label>
-                            <textarea name="project_description" class="form-control rounded-3" rows="3"></textarea>
+                            <textarea name="description" class="form-control rounded-3" rows="3"></textarea>
                         </div>
                     </div>
                 </form>
@@ -227,8 +311,65 @@
 <script>
     let currentSection = 'research';
 
+    function getFilterParams() {
+        const search = document.getElementById('project-search').value;
+        const field = document.getElementById('filter-field').value;
+        const year = document.getElementById('filter-year').value;
+        const semester = document.getElementById('filter-semester').value;
+        
+        let params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (field) params.append('field', field);
+        if (year) params.append('year', year);
+        if (semester) params.append('semester', semester);
+        return params.toString();
+    }
+
     async function loadResearchAreas() {
         const grid = document.getElementById('areas-grid');
+        const params = getFilterParams();
+        
+        // If filters are active, we show papers directly instead of areas
+        if (params) {
+            grid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>';
+            try {
+                const res = await fetch(`{% url "projects:api_papers" %}?${params}`);
+                const data = await res.json();
+                
+                if (data.papers.length === 0) {
+                    grid.innerHTML = '<div class="col-12 text-center py-5"><div class="text-muted">No papers found matching your criteria.</div></div>';
+                    return;
+                }
+
+                grid.innerHTML = `
+                    <div class="col-12 mb-3"><h6 class="fw-bold text-muted text-uppercase small">Search Results: ${data.papers.length} Papers found</h6></div>
+                    <div class="col-12">
+                        <div class="row g-3">
+                            ${data.papers.map(p => `
+                                <div class="col-md-6">
+                                    <div class="paper-item bg-white shadow-sm border p-4 mb-0" style="height: 100%;">
+                                        <h6 class="fw-bold mb-1">${p.title}</h6>
+                                        <div class="small text-muted mb-2">${p.authors} — ${p.semester} ${p.passing_year}</div>
+                                        ${p.field ? `<div class="small mb-2"><span class="badge bg-light text-dark border">Field: ${p.field}</span></div>` : ''}
+                                        <div class="small text-muted mb-3">${p.description ? p.description.substring(0, 150) + '...' : 'No description available.'}</div>
+                                        <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                            <div class="small text-muted">Supervisor: <b class="text-dark">${p.faculty_name || 'N/A'}</b></div>
+                                            <div class="d-flex gap-2">
+                                                ${p.pdf_file ? `<a href="${p.pdf_file}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 small">File <i class="fas fa-file-pdf ms-1"></i></a>` : ''}
+                                                ${p.pdf_link ? `<a href="${p.pdf_link}" target="_blank" class="btn btn-sm btn-link p-0 text-primary fw-bold text-decoration-none">Link <i class="fas fa-external-link-alt ms-1"></i></a>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } catch (e) { console.error(e); }
+            return;
+        }
+
+        // Default: Show Research Areas
         try {
             const res = await fetch('{% url "projects:api_research_areas" %}');
             const data = await res.json();
@@ -237,7 +378,7 @@
                     <div class="project-card shadow-sm" onclick="showAreaDetail(${area.id})">
                         <div class="area-box">${area.icon}</div>
                         <h5 class="fw-bold">${area.research_area}</h5>
-                        <p class="small text-muted flex-grow-1">${area.description.substring(0, 100)}...</p>
+                        <p class="small text-muted flex-grow-1">${area.description ? area.description.substring(0, 100) + '...' : ''}</p>
                         <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
                             <span class="small text-primary fw-bold">${area.paper_count} Papers</span>
                             <span class="text-muted small">Lead: ${area.lead_faculty}</span>
@@ -249,7 +390,6 @@
     }
 
     async function showAreaDetail(id) {
-        // Fetch specific papers for this area
         try {
             const resArea = await fetch('{% url "projects:api_research_areas" %}');
             const dataArea = await resArea.json();
@@ -269,10 +409,15 @@
                 list.innerHTML = dataPapers.papers.map(p => `
                     <div class="paper-item">
                         <h6 class="fw-bold mb-1">${p.title}</h6>
-                        <div class="small text-muted mb-2">${p.authors} — ${p.publication_year}</div>
+                        <div class="small text-muted mb-2">${p.authors} — ${p.semester} ${p.passing_year}</div>
+                        ${p.field ? `<div class="small mb-2"><span class="badge bg-light text-dark border">Field: ${p.field}</span></div>` : ''}
+                        <div class="small text-muted mb-2"><b>Supervisor:</b> ${p.faculty_name || 'N/A'}</div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="small text-muted">${p.uploaded_by}</span>
-                            ${p.pdf_link ? `<a href="${p.pdf_link}" target="_blank" class="btn btn-sm btn-link p-0 text-primary fw-bold text-decoration-none">Read PDF <i class="fas fa-external-link-alt ms-1"></i></a>` : ''}
+                            <span class="small text-muted">Uploaded by: ${p.uploaded_by}</span>
+                            <div class="d-flex gap-2">
+                                ${p.pdf_file ? `<a href="${p.pdf_file}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 small">File <i class="fas fa-file-pdf ms-1"></i></a>` : ''}
+                                ${p.pdf_link ? `<a href="${p.pdf_link}" target="_blank" class="btn btn-sm btn-link p-0 text-primary fw-bold text-decoration-none">Link <i class="fas fa-external-link-alt ms-1"></i></a>` : ''}
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -284,28 +429,39 @@
 
     async function loadCapstones() {
         const grid = document.getElementById('capstone-grid');
+        const params = getFilterParams();
+        grid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>';
+        
         try {
-            const res = await fetch('{% url "projects:api_capstones" %}');
+            const res = await fetch(`{% url "projects:api_capstones" %}?${params}`);
             const data = await res.json();
+            
+            if (data.capstones.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center py-5"><div class="text-muted">No capstone projects found matching your criteria.</div></div>';
+                return;
+            }
+
             grid.innerHTML = data.capstones.map(c => `
                 <div class="col-md-6">
                     <div class="project-card shadow-sm border-0">
                         <div class="d-flex justify-content-between mb-2">
-                             <span class="badge bg-light text-primary border py-1">Batch ${c.batch_year}</span>
+                             <span class="badge bg-light text-primary border py-1">${c.semester} ${c.passing_year}</span>
                              <span class="badge bg-success py-1">${c.status}</span>
                         </div>
-                        <h5 class="fw-bold">${c.project_title}</h5>
-                        <p class="small text-muted flex-grow-1">${c.project_description.substring(0, 150)}...</p>
+                        <h5 class="fw-bold">${c.title}</h5>
+                        ${c.field ? `<div class="mb-2"><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 small">${c.field}</span></div>` : ''}
+                        <p class="small text-muted flex-grow-1">${c.description ? c.description.substring(0, 150) + '...' : 'No description available.'}</p>
                         <hr class="my-3 opacity-10">
                         <div class="small mb-3">
-                            <div class="fw-bold">Team:</div>
-                            <div class="text-muted">${c.team_members}</div>
+                            <div class="fw-bold text-muted small text-uppercase">Team Members:</div>
+                            <div class="text-dark">${c.team_members}</div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-auto">
-                            <span class="small text-muted">Supervisor: <b>${c.faculty_supervisor}</b></span>
+                            <div class="small text-muted">Supervisor: <b class="text-dark">${c.faculty_name || 'N/A'}</b></div>
                             <div class="d-flex gap-2">
-                                ${c.report_pdf ? `<a href="${c.report_pdf}" class="text-primary"><i class="fas fa-file-pdf"></i></a>` : ''}
-                                ${c.presentation_slides ? `<a href="${c.presentation_slides}" class="text-warning"><i class="fas fa-file-powerpoint"></i></a>` : ''}
+                                ${c.pdf_file ? `<a href="${c.pdf_file}" class="text-primary" target="_blank" title="Report PDF"><i class="fas fa-file-pdf"></i></a>` : ''}
+                                ${c.pdf_link ? `<a href="${c.pdf_link}" class="text-info" target="_blank" title="External Link"><i class="fas fa-link"></i></a>` : ''}
+                                ${c.presentation_slides ? `<a href="${c.presentation_slides}" class="text-warning" target="_blank" title="Slides"><i class="fas fa-file-powerpoint"></i></a>` : ''}
                             </div>
                         </div>
                     </div>
@@ -321,8 +477,25 @@
         document.getElementById('section-research').classList.toggle('d-none', sec !== 'research');
         document.getElementById('section-capstone').classList.toggle('d-none', sec !== 'capstone');
         
-        if (sec === 'research') loadResearchAreas();
+        applyFilters();
+    }
+
+    function handleSearch(e) {
+        if (e.key === 'Enter') applyFilters();
+        // Optional: debounce or automatic search after X ms
+    }
+
+    function applyFilters() {
+        if (currentSection === 'research') loadResearchAreas();
         else loadCapstones();
+    }
+
+    function resetFilters() {
+        document.getElementById('project-search').value = '';
+        document.getElementById('filter-field').value = '';
+        document.getElementById('filter-year').value = '';
+        document.getElementById('filter-semester').value = '';
+        applyFilters();
     }
 
     async function submitPaper() {

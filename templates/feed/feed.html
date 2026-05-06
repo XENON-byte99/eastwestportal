@@ -39,6 +39,9 @@
             </div>
         </div>
     </div>
+    <div id="load-more-wrapper" class="text-center py-3 d-none">
+        <button id="loadMoreBtn" class="btn btn-outline-primary rounded-pill px-4 fw-bold" onclick="loadMorePosts()">Load More Posts</button>
+    </div>
 </div>
 
 <!-- Create Post Modal -->
@@ -162,15 +165,18 @@
 
 {% block extra_js %}
 <script>
-async function loadPosts() {
+let currentPage = 1;
+let hasMore = false;
+
+async function loadPosts(append = false) {
     const wrapper = document.getElementById('posts-wrapper');
     try {
-        const response = await fetch('/feed/api/posts/');
+        const response = await fetch(`/feed/api/posts/?page=${currentPage}&limit=20`);
         const data = await response.json();
         const loader = document.getElementById('feed-loader');
         if (loader) loader.remove();
 
-        if (data.posts.length === 0) {
+        if (data.posts.length === 0 && !append) {
             wrapper.innerHTML = `
                 <div class="card p-5 text-center text-muted border-0 shadow-sm" style="border-radius: 12px;">
                     <i class="fas fa-rss fa-3x mb-3 opacity-25"></i>
@@ -180,10 +186,29 @@ async function loadPosts() {
             return;
         }
 
-        wrapper.innerHTML = data.posts.map(post => renderPostHtml(post)).join('');
+        const html = data.posts.map(post => renderPostHtml(post)).join('');
+        if (append) {
+            wrapper.insertAdjacentHTML('beforeend', html);
+        } else {
+            wrapper.innerHTML = html;
+        }
+
+        hasMore = data.has_more;
+        document.getElementById('load-more-wrapper').classList.toggle('d-none', !hasMore);
     } catch (error) {
         console.error('Error loading posts:', error);
     }
+}
+
+function loadMorePosts() {
+    currentPage++;
+    const btn = document.getElementById('loadMoreBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+    loadPosts(true).then(() => {
+        btn.disabled = false;
+        btn.innerHTML = 'Load More Posts';
+    });
 }
 
 function renderPostHtml(post) {
@@ -224,8 +249,8 @@ function renderPostHtml(post) {
                 <div class="text-muted"><span id="comment-count-${post.id}">${post.comments.length}</span> comments</div>
             </div>
             <div class="post-footer d-flex">
-                <button id="like-btn-${post.id}" class="post-action-btn" onclick="likePost(${post.id})">
-                    <i class="far fa-heart me-1"></i> Like
+                <button id="like-btn-${post.id}" class="post-action-btn ${post.user_liked ? 'active' : ''}" onclick="likePost(${post.id})">
+                    <i class="${post.user_liked ? 'fas' : 'far'} fa-heart me-1" style="${post.user_liked ? 'color: #ef4444;' : ''}"></i> ${post.user_liked ? 'Liked' : 'Like'}
                 </button>
                 <button class="post-action-btn" onclick="focusComment(${post.id})">
                     <i class="far fa-comment me-1"></i> Comment
@@ -393,7 +418,6 @@ async function likePost(id) {
     const countSpan = document.getElementById(`like-count-${id}`);
     
     icon.classList.add('like-pulse');
-    icon.className = 'fas fa-heart like-pulse';
     
     try {
         const response = await fetch(`/feed/api/posts/${id}/like/`, {
@@ -403,10 +427,21 @@ async function likePost(id) {
         const data = await response.json();
         if (response.ok) {
             countSpan.innerText = data.likes;
+            if (data.user_liked) {
+                icon.className = 'fas fa-heart me-1 like-pulse';
+                icon.style.color = '#ef4444';
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fas fa-heart me-1" style="color: #ef4444;"></i> Liked';
+            } else {
+                icon.className = 'far fa-heart me-1';
+                icon.style.color = '';
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="far fa-heart me-1"></i> Like';
+            }
         }
     } catch (error) { 
         console.error(error);
-        icon.className = 'far fa-heart'; // Reset on error
+        icon.className = 'far fa-heart me-1';
     }
 }
 

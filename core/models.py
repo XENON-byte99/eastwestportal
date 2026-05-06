@@ -107,20 +107,18 @@ class Announcement(models.Model):
         if is_new:
             # Create notifications for all active users
             from django.contrib.auth import get_user_model
+            from core.utils import bulk_send_notifications
             User = get_user_model()
             users = User.objects.filter(is_active=True)
             
-            notifications = [
-                Notification(
-                    recipient=user,
-                    sender=self.author,
-                    notification_type='announcement',
-                    title=f'New Announcement: {self.title}',
-                    message=self.content[:100] + '...',
-                    link='/notices/' # Assuming a notice page exists or will exist
-                ) for user in users
-            ]
-            Notification.objects.bulk_create(notifications)
+            bulk_send_notifications(
+                recipients=users,
+                title=f'New Announcement: {self.title}',
+                message=self.content[:100] + '...',
+                notification_type='announcement',
+                link='/core/notices/',
+                sender=self.author
+            )
 
 
 class Enrollment(models.Model):

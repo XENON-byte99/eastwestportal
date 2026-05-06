@@ -16,13 +16,24 @@ class ResearchArea(models.Model):
         return self.research_area
 
 
+SEMESTER_CHOICES = [
+    ('Spring', 'Spring'),
+    ('Summer', 'Summer'),
+    ('Fall', 'Fall'),
+]
+
+
 class Paper(models.Model):
-    research_area = models.ForeignKey(ResearchArea, on_delete=models.CASCADE, related_name='papers')
+    research_area = models.ForeignKey(ResearchArea, on_delete=models.CASCADE, related_name='papers', null=True, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=400)
+    field = models.CharField(max_length=200, blank=True, help_text="Specific field of research")
+    faculty_name = models.CharField(max_length=200, blank=True, help_text="Name of faculty supervisor/advisor")
     authors = models.CharField(max_length=400)
-    abstract = models.TextField(blank=True)
-    publication_year = models.PositiveIntegerField()
+    description = models.TextField(blank=True)
+    passing_year = models.PositiveIntegerField(default=2024)
+    semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES, default='Spring')
+    pdf_file = models.FileField(upload_to='research/papers/', null=True, blank=True)
     pdf_link = models.URLField(max_length=1000, blank=True)
     citations = models.PositiveIntegerField(default=0)
     dataset_link = models.URLField(max_length=1000, blank=True)
@@ -30,7 +41,7 @@ class Paper(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-publication_year', '-citations']
+        ordering = ['-passing_year', '-citations']
 
     def __str__(self):
         return self.title
@@ -45,12 +56,15 @@ CAPSTONE_STATUS_CHOICES = [
 
 class Capstone(models.Model):
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    project_title = models.CharField(max_length=400)
-    batch_year = models.PositiveIntegerField()
-    faculty_supervisor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='supervised_capstones')
+    title = models.CharField(max_length=400)
+    field = models.CharField(max_length=200, blank=True, help_text="Project category/field")
+    faculty_name = models.CharField(max_length=200, blank=True, help_text="Name of faculty supervisor")
+    passing_year = models.PositiveIntegerField(default=2024)
+    semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES, default='Spring')
     team_members = models.TextField(help_text='Comma-separated list of team members')
-    project_description = models.TextField(blank=True)
-    report_pdf = models.URLField(max_length=1000, blank=True)
+    description = models.TextField(blank=True)
+    pdf_file = models.FileField(upload_to='research/capstones/', null=True, blank=True)
+    pdf_link = models.URLField(max_length=1000, blank=True)
     presentation_slides = models.URLField(max_length=1000, blank=True)
     demo_video = models.URLField(max_length=1000, blank=True)
     gallery_images = models.TextField(blank=True, help_text='Comma-separated image URLs')
@@ -59,7 +73,7 @@ class Capstone(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-batch_year', 'project_title']
+        ordering = ['-passing_year', 'title']
 
     def __str__(self):
-        return f"[{self.batch_year}] {self.project_title}"
+        return f"[{self.passing_year}] {self.title}"

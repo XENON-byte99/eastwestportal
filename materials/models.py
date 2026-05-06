@@ -88,9 +88,10 @@ class MaterialRating(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Update material stats
-        ratings = self.material.ratings.all()
-        self.material.rating_count = ratings.count()
-        self.material.average_rating = sum(r.score for r in ratings) / self.material.rating_count
+        # Update material stats using aggregation
+        from django.db.models import Avg
+        stats = self.material.ratings.aggregate(avg_score=Avg('score'), count=models.Count('id'))
+        self.material.rating_count = stats['count'] or 0
+        self.material.average_rating = stats['avg_score'] or 0.0
         self.material.save()
 
