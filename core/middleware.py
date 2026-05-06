@@ -11,6 +11,10 @@ EXEMPT_URLS = [
     '/core/pending/',
     '/core/logout/',
     '/core/api/',
+    '/feed/api/',
+    '/materials/api/',
+    '/marketplace/api/',
+    '/projects/api/',
 ]
 
 
@@ -29,6 +33,10 @@ class ApprovalRequiredMiddleware:
                     current_path = request.path
                     is_exempt = any(current_path.startswith(url) for url in EXEMPT_URLS)
                     if not is_exempt and current_path != pending_url:
+                        # For AJAX/Fetch requests, return a JSON error instead of a redirect
+                        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                            from django.http import JsonResponse
+                            return JsonResponse({'error': 'Account approval pending'}, status=403)
                         return redirect(pending_url)
         return self.get_response(request)
 
@@ -62,6 +70,10 @@ class EnrollmentRequiredMiddleware:
                 if not is_exempt and current_path != enroll_url:
                     has_enrollment = Enrollment.objects.filter(student=request.user, semester=semester, year=year).exists()
                     if not has_enrollment:
+                        # For AJAX/Fetch requests, return a JSON error instead of a redirect
+                        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                            from django.http import JsonResponse
+                            return JsonResponse({'error': 'Enrollment required for current semester'}, status=403)
                         return redirect(enroll_url)
 
         return self.get_response(request)

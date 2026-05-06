@@ -42,7 +42,7 @@ def api_posts(request):
         ).prefetch_related('comments', 'uploaded_by').order_by('priority', '-created_at')
 
         total = all_posts.count()
-        posts = all_posts[(page - 1) * per_page:page * per_page]
+        posts = list(all_posts[(page - 1) * per_page:page * per_page])
 
         # Get user's liked post IDs for this page
         user_liked_ids = set(PostLike.objects.filter(user=request.user, post__in=posts).values_list('post_id', flat=True))

@@ -171,10 +171,17 @@ let hasMore = false;
 async function loadPosts(append = false) {
     const wrapper = document.getElementById('posts-wrapper');
     try {
-        const response = await fetch(`/feed/api/posts/?page=${currentPage}&limit=20`);
+        const response = await fetch(`/feed/api/posts/?page=${currentPage}&limit=20`, {
+            headers: { 'Accept': 'application/json' }
+        });
         const data = await response.json();
+        
         const loader = document.getElementById('feed-loader');
         if (loader) loader.remove();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to load posts');
+        }
 
         if (data.posts.length === 0 && !append) {
             wrapper.innerHTML = `
@@ -197,6 +204,20 @@ async function loadPosts(append = false) {
         document.getElementById('load-more-wrapper').classList.toggle('d-none', !hasMore);
     } catch (error) {
         console.error('Error loading posts:', error);
+        const loader = document.getElementById('feed-loader');
+        if (loader) loader.remove();
+        
+        if (!append) {
+            wrapper.innerHTML = `
+                <div class="card p-5 text-center text-danger border-0 shadow-sm" style="border-radius: 12px;">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-25"></i>
+                    <h5>Error loading feed</h5>
+                    <p class="small">${error.message || 'Please check your connection and try again.'}</p>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-4" onclick="location.reload()">Retry</button>
+                </div>`;
+        } else {
+            showToast('Error loading more posts', 'error');
+        }
     }
 }
 
@@ -349,7 +370,10 @@ async function submitPost(isDraft = false) {
     try {
         const response = await fetch('/feed/api/posts/', {
             method: 'POST',
-            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            headers: { 
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Accept': 'application/json'
+            },
             body: formData
         });
         const result = await response.json();
