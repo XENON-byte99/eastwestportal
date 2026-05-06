@@ -216,7 +216,7 @@ function renderPostHtml(post) {
             </div>
             <div class="post-body">
                 <p class="mb-2" style="white-space: pre-wrap;">${post.content}</p>
-                ${post.media_url ? `<img src="${post.media_url}" class="img-fluid rounded mt-2 w-100" style="max-height: 500px; object-fit: cover;">` : ''}
+                ${post.media_url ? `<div class="mt-2 text-center bg-light rounded" style="overflow: hidden;"><img src="${post.media_url}" class="img-fluid rounded" style="max-height: 500px; object-fit: contain;"></div>` : ''}
             </div>
             ${!post.is_draft ? `
             <div class="px-3 pb-2 d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
@@ -236,8 +236,14 @@ function renderPostHtml(post) {
             </div>
             <!-- Comments Section -->
             <div class="px-3 pb-3">
-                <div id="comments-${post.id}" class="mt-2">
-                    ${post.comments.map(c => renderCommentHtml(c)).join('')}
+                <div id="comments-wrapper-${post.id}" class="mt-2">
+                    ${post.comments.length > 2 ? `<div id="view-more-${post.id}" class="mt-1 mb-2"><a href="javascript:void(0)" class="text-muted fw-semibold small text-decoration-none hover-underline" onclick="document.getElementById('hidden-comments-${post.id}').classList.remove('d-none'); this.parentElement.remove();">View ${post.comments.length - 2} previous comments</a></div>` : ''}
+                    <div id="hidden-comments-${post.id}" class="${post.comments.length > 2 ? 'd-none' : ''}">
+                        ${post.comments.slice(0, post.comments.length > 2 ? post.comments.length - 2 : 0).map(c => renderCommentHtml(c)).join('')}
+                    </div>
+                    <div id="comments-${post.id}">
+                        ${post.comments.slice(post.comments.length > 2 ? -2 : 0).map(c => renderCommentHtml(c)).join('')}
+                    </div>
                 </div>
                 <!-- New Comment Input -->
                 <div class="d-flex align-items-center gap-2 mt-2">
