@@ -20,6 +20,7 @@
                 <tr>
                     <th class="px-4 py-3 text-uppercase small fw-bold text-muted" style="width: 15%">Code</th>
                     <th class="py-3 text-uppercase small fw-bold text-muted">Course Name</th>
+                    <th class="py-3 text-uppercase small fw-bold text-muted">Credits</th>
                     <th class="py-3 text-uppercase small fw-bold text-muted">Department</th>
                     <th class="py-3 text-uppercase small fw-bold text-muted">Created</th>
                     <th class="px-4 py-3 text-end text-uppercase small fw-bold text-muted">Actions</th>
@@ -54,6 +55,10 @@
                         <label class="form-label small fw-bold">Course Full Name</label>
                         <input type="text" name="name" class="form-control rounded-3" placeholder="e.g. Structured Programming" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Credits</label>
+                        <input type="text" name="credits" class="form-control rounded-3" placeholder="e.g. 3+1=4">
+                    </div>
                     <div class="mb-0">
                         <label class="form-label small fw-bold">Department (Optional)</label>
                         <input type="text" name="department" class="form-control rounded-3" placeholder="e.g. CSE">
@@ -86,6 +91,10 @@
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Course Full Name</label>
                         <input type="text" name="name" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Credits</label>
+                        <input type="text" name="credits" class="form-control rounded-3" placeholder="e.g. 3+1=4">
                     </div>
                     <div class="mb-0">
                         <label class="form-label small fw-bold">Department</label>
@@ -121,6 +130,7 @@
             <tr>
                 <td class="px-4"><span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2">${c.code}</span></td>
                 <td><span class="fw-semibold">${c.name}</span></td>
+                <td><span class="text-muted small">${c.credits || 'N/A'}</span></td>
                 <td><span class="text-muted small">${c.department || 'N/A'}</span></td>
                 <td><span class="text-muted small">${new Date(c.created_at).toLocaleDateString()}</span></td>
                 <td class="px-4 text-end">
@@ -142,6 +152,7 @@
         form.elements['course_id'].value = c.id;
         form.elements['code'].value = c.code;
         form.elements['name'].value = c.name;
+        form.elements['credits'].value = c.credits || '';
         form.elements['department'].value = c.department;
         new bootstrap.Modal(modal).show();
     }
@@ -172,6 +183,7 @@
         const jsonData = {
             code: form.elements['code'].value,
             name: form.elements['name'].value,
+            credits: form.elements['credits'].value,
             department: form.elements['department'].value
         };
 

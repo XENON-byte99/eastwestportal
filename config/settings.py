@@ -190,7 +190,7 @@ SOCIALACCOUNT_PROVIDERS = {
         },
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {
-            'hd': 'ewubd.edu',      # Hint Google to show only @ewubd.edu accounts
+            'hd': 'std.ewubd.edu',      # Hint Google to show only @std.ewubd.edu accounts
             'access_type': 'online',
         },
         'FETCH_USERINFO': True,

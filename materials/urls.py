@@ -11,6 +11,7 @@ urlpatterns = [
     # JSON API
     path('api/materials/', views.api_materials, name='api_materials'),
     path('api/materials/<int:material_id>/', views.api_material_detail, name='api_material_detail'),
+    path('api/materials/<int:material_id>/rate/', views.api_rate_material, name='api_rate_material'),
     path('api/attachments/<int:attachment_id>/', views.api_attachment_delete, name='api_attachment_delete'),
     path('api/courses/', views.api_courses, name='api_courses'),
 

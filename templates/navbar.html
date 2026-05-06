@@ -42,7 +42,7 @@
                     </span>
                 </div>
                 <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" 
-                     style="border-radius: 16px; min-width: 320px; max-height: 480px; overflow: hidden; display: none;" id="notification-dropdown">
+                     style="border-radius: 16px; min-width: 320px; max-height: 480px; overflow: hidden;" id="notification-dropdown">
                     <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold">Notifications</h6>
                         <button class="btn btn-link btn-sm text-decoration-none p-0 small" onclick="markAllRead()" style="font-size: 0.75rem;">Mark all as read</button>
@@ -176,19 +176,14 @@
 
     // Initial fetch
     fetchNotifications();
-    // Refresh every 30 seconds
-    setInterval(fetchNotifications, 30000);
+    // Refresh every 15 seconds
+    setInterval(fetchNotifications, 15000);
 
-    // Bootstrap dropdown manual handle to fix layout if needed
+    // Bootstrap dropdown manual handle fix
+    // We let Bootstrap handle the 'show' class, but we can hook into it
     const bell = document.getElementById('notification-bell');
-    const menu = document.getElementById('notification-dropdown');
-    bell.addEventListener('click', () => {
-        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-    });
-    document.addEventListener('click', (e) => {
-        if (!bell.contains(e.target) && !menu.contains(e.target)) {
-            menu.style.display = 'none';
-        }
+    bell.addEventListener('shown.bs.dropdown', () => {
+        // Optional: mark as read when opened? No, usually better to let user click "Mark all as read"
     });
 
     // Handle styles for hover

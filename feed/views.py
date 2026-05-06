@@ -57,6 +57,7 @@ def api_posts(request):
                 'author_role': p.uploaded_by.get_role_display(),
                 'avatar_initials': f"{p.uploaded_by.first_name[0]}{p.uploaded_by.last_name[0]}" if p.uploaded_by.first_name and p.uploaded_by.last_name else "U",
                 'content': p.content,
+                'media_url': p.media.url if p.media else None,
                 'is_approved': p.is_approved,
                 'is_draft': p.is_draft,
                 'likes': p.likes,
@@ -109,7 +110,8 @@ def api_posts(request):
         'is_approved': is_approved,
         'is_draft': post.is_draft,
         'author': post.uploaded_by.get_full_name() or post.uploaded_by.email,
-        'avatar_initials': f"{post.uploaded_by.first_name[0]}{post.uploaded_by.last_name[0]}" if post.uploaded_by.first_name and post.uploaded_by.last_name else "U"
+        'avatar_initials': f"{post.uploaded_by.first_name[0]}{post.uploaded_by.last_name[0]}" if post.uploaded_by.first_name and post.uploaded_by.last_name else "U",
+        'media_url': post.media.url if post.media else None
     }, status=201)
 
 
@@ -152,6 +154,7 @@ def api_post_detail(request, post_id):
             'id': post.id, 
             'author': post.uploaded_by.get_full_name() or post.uploaded_by.email, 
             'content': post.content,
+            'media_url': post.media.url if post.media else None,
             'is_approved': post.is_approved, 
             'is_draft': post.is_draft,
             'likes': post.likes, 

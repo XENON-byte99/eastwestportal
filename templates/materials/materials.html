@@ -43,6 +43,12 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.06);
     border-color: rgba(79, 70, 229, 0.25);
   }
+  
+  .rating-stars { display: flex; gap: 2px; }
+  .rating-stars i { font-size: 0.75rem; color: #e2e8f0; cursor: pointer; transition: color 0.2s; }
+  .rating-stars i.active { color: #fbbf24; }
+  .rating-stars i:hover { color: #fbbf24; }
+  .rating-stars.readonly i { cursor: default; }
 
   .icon-box-small { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: var(--primary); }
 
@@ -147,9 +153,39 @@
     <!-- Tabs will be injected here -->
 </div>
 
+<!-- Enrolled Materials Section -->
+<div id="enrolled-materials-container" class="mb-5" style="display: none;">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <i class="fas fa-star text-warning"></i>
+        <h5 class="fw-bold mb-0">For Your Enrolled Courses</h5>
+    </div>
+    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 16px;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                        <th class="px-4 py-3">Course</th>
+                        <th class="py-3">Resource Title</th>
+                        <th class="py-3 text-center">Rating</th>
+                        <th class="py-3">Type</th>
+                        <th class="py-3">Faculty</th>
+                        <th class="px-4 py-3 text-end">Attachments</th>
+                    </tr>
+                </thead>
+                <tbody id="enrolled-materials-body">
+                    <!-- Enrolled materials will be injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <!-- Materials Grid -->
+<div id="materials-grid-header" style="display: none;">
+    <h5 class="fw-bold mb-3">All Materials</h5>
+</div>
 <div id="materials-grid" class="row g-3">
-    <div class="col-12 text-center py-5">
+    <div id="no-materials-selected" class="col-12 text-center py-5">
         <i class="fas fa-filter fa-3x text-muted mb-3 opacity-25"></i>
         <h6 class="text-muted">Click the filter icon above to select a course and browse materials</h6>
     </div>
@@ -328,6 +364,64 @@
     
     populateModalDropdowns();
     renderDropdowns();
+    loadEnrolledMaterials();
+  }
+
+  async function loadEnrolledMaterials() {
+    try {
+        const res = await fetch('{% url "materials:api_materials" %}?enrolled_only=true');
+        const data = await res.json();
+        const enrolledMaterials = data.materials;
+        const container = document.getElementById('enrolled-materials-container');
+        const body = document.getElementById('enrolled-materials-body');
+        const noMaterialsMsg = document.getElementById('no-materials-selected');
+
+        if (enrolledMaterials.length > 0) {
+            container.style.display = 'block';
+            noMaterialsMsg.innerHTML = `
+                <i class="fas fa-search fa-3x text-muted mb-3 opacity-25"></i>
+                <h6 class="text-muted">Use the filter above to find materials for other courses</h6>
+            `;
+            
+            body.innerHTML = enrolledMaterials.map(m => `
+                <tr>
+                    <td class="px-4">
+                        <div class="fw-bold text-primary small">${m.course_code}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">${m.course_name}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold" style="font-size: 0.85rem;">${m.title}</div>
+                        ${m.semester ? `<span class="badge bg-light text-muted border mt-1" style="font-size: 0.65rem;">${m.semester} ${m.year || ''}</span>` : ''}
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="rating-stars readonly" id="enrolled-rate-${m.id}">
+                                ${[1,2,3,4,5].map(i => `<i class="fas fa-star ${i <= Math.round(m.average_rating) ? 'active' : ''}"></i>`).join('')}
+                            </div>
+                            <span class="text-muted" style="font-size: 0.65rem;">${m.average_rating} (${m.rating_count})</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 0.7rem;">
+                            <i class="fas ${m.type_icon} me-1"></i>${m.type_name}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="text-muted small">${m.faculty_name}</div>
+                    </td>
+                    <td class="px-4 text-end">
+                        <div class="d-flex justify-content-end gap-1">
+                            ${m.attachments.map(a => `
+                                <a href="${a.url}" target="_blank" class="btn btn-sm btn-light border p-1" title="${a.name}" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                    <i class="fas ${a.is_link ? 'fa-link text-primary' : 'fa-file-download text-danger'}" style="font-size: 0.8rem;"></i>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (e) { console.error('Error loading enrolled materials:', e); }
   }
 
   function populateModalDropdowns() {
@@ -382,6 +476,9 @@
     const res = await fetch(`{% url "materials:api_materials" %}?course_id=${courseId}&faculty_id=${facultyId}`);
     const data = await res.json();
     allMaterials = data.materials;
+    
+    document.getElementById('enrolled-materials-container').style.display = 'none';
+    document.getElementById('materials-grid-header').style.display = 'block';
     
     renderTabs();
     renderMaterials(null); 
@@ -473,6 +570,12 @@
                     </div>
                     <div style="min-width: 0; flex: 1;">
                         <h6 class="fw-bold mb-0 text-truncate" title="${m.title}" style="font-size: 0.9rem;">${m.title}</h6>
+                        <div class="d-flex flex-wrap gap-1 mt-1 align-items-center">
+                            <div class="rating-stars me-2" id="rate-main-${m.id}">
+                                ${[1,2,3,4,5].map(i => `<i class="fas fa-star ${i <= Math.round(m.average_rating) ? 'active' : ''}" onclick="rateMaterial(${m.id}, ${i})"></i>`).join('')}
+                            </div>
+                            <span class="text-muted small" style="font-size: 0.65rem;">${m.average_rating} (${m.rating_count})</span>
+                        </div>
                         <div class="d-flex flex-wrap gap-1 mt-1">
                             <span class="badge bg-light text-muted border" style="font-size: 0.68rem;">${m.type_name}</span>
                             ${m.semester ? `<span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 0.68rem;">${m.semester} ${m.year || ''}</span>` : ''}
@@ -626,6 +729,34 @@
               alert(res.error);
           }
       } catch (e) { console.error(e); }
+  }
+
+  async function rateMaterial(id, score) {
+    try {
+        const response = await fetch(`/materials/api/materials/${id}/rate/`, {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ score: score })
+        });
+        const result = await response.json();
+        if (response.ok) {
+            alert(result.message);
+            // Refresh the stars for this material
+            const stars = document.querySelectorAll(`#rate-main-${id} i`);
+            stars.forEach((star, idx) => {
+                if (idx < score) star.classList.add('active');
+                else star.classList.remove('active');
+            });
+            // Update the text
+            const text = document.querySelector(`#rate-main-${id} + span`);
+            if (text) text.innerText = `${result.average_rating} (${result.rating_count})`;
+        } else {
+            alert(result.error);
+        }
+    } catch (e) { console.error(e); }
   }
 
   function addLinkInput(containerId) {

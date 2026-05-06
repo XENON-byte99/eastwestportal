@@ -92,7 +92,7 @@
 
       <div class="domain-note">
         <i class="fas fa-circle-info" style="margin-top:1px;"></i>
-        <span>Only <strong>@ewubd.edu</strong> email addresses are accepted. Use your official university email.</span>
+        <span>Only <strong>@std.ewubd.edu</strong> email addresses are accepted. Use your official university email.</span>
       </div>
 
       {% for error in form.non_field_errors %}
@@ -128,7 +128,7 @@
         <label>University Email *</label>
         <div class="input-wrap">
           <i class="fas fa-envelope"></i>
-          <input type="email" name="email" placeholder="your.id@ewubd.edu" value="{{ form.email.value|default:'' }}" autocomplete="email" required>
+          <input type="email" name="email" placeholder="your.id@std.ewubd.edu" value="{{ form.email.value|default:'' }}" autocomplete="email" required>
         </div>
         {% if form.email.errors %}<ul class="error-list">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 
@@ -218,7 +218,7 @@
 
       <a href="{% url 'google_login' %}" class="btn-google">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        Continue with Google (@ewubd.edu)
+        Continue with Google (@std.ewubd.edu)
       </a>
 
       <div class="signin-link">

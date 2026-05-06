@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from .models import Material, Course, MaterialType, MaterialAttachment
+from .models import Material, Course, MaterialType, MaterialAttachment, MaterialRating
 
 
 
@@ -43,7 +43,7 @@ def manage_material_types(request):
 def api_course_manage(request, course_id=None):
     """CRUD API for Courses (Admin only)."""
     if request.method == 'GET':
-        courses = list(Course.objects.all().values('id', 'code', 'name', 'department', 'created_at'))
+        courses = list(Course.objects.all().values('id', 'code', 'name', 'credits', 'department', 'created_at'))
         return JsonResponse({'courses': courses})
 
     if request.method == 'POST':
@@ -51,6 +51,7 @@ def api_course_manage(request, course_id=None):
             body = json.loads(request.body)
             code = body.get('code', '').strip().upper()
             name = body.get('name', '').strip()
+            credits = body.get('credits', '').strip()
             dept = body.get('department', '').strip()
 
             if not code or not name:
@@ -59,7 +60,7 @@ def api_course_manage(request, course_id=None):
             if Course.objects.filter(code=code).exists():
                 return JsonResponse({'error': f'Course with code {code} already exists.'}, status=400)
 
-            course = Course.objects.create(code=code, name=name, department=dept)
+            course = Course.objects.create(code=code, name=name, credits=credits, department=dept)
             return JsonResponse({'id': course.id, 'message': 'Course created successfully'}, status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
@@ -74,6 +75,8 @@ def api_course_manage(request, course_id=None):
                 course.code = body['code'].strip().upper()
             if 'name' in body:
                 course.name = body['name'].strip()
+            if 'credits' in body:
+                course.credits = body['credits'].strip()
             if 'department' in body:
                 course.department = body['department'].strip()
             course.save()
@@ -161,7 +164,25 @@ def api_materials(request):
         course_id = request.GET.get('course_id')
         faculty_id = request.GET.get('faculty_id')
         type_id = request.GET.get('type_id')
+        enrolled_only = request.GET.get('enrolled_only') == 'true'
         
+        if enrolled_only:
+            from core.models import Enrollment
+            from django.utils import timezone
+            now = timezone.now()
+            month = now.month
+            if month <= 4: sem = 'Spring'
+            elif month <= 8: sem = 'Summer'
+            else: sem = 'Fall'
+            
+            # Get course IDs user is enrolled in for current semester/year
+            enrolled_course_ids = Enrollment.objects.filter(
+                student=request.user, 
+                semester=sem, 
+                year=now.year
+            ).values_list('course_id', flat=True)
+            qs = qs.filter(course_id__in=enrolled_course_ids)
+
         if course_id:
             qs = qs.filter(course_id=course_id)
         if faculty_id:
@@ -194,6 +215,8 @@ def api_materials(request):
             'year': m.year,
             'order': m.order,
             'is_approved': m.is_approved,
+            'average_rating': round(m.average_rating, 1),
+            'rating_count': m.rating_count,
             'uploaded_by': m.uploaded_by.get_full_name() or m.uploaded_by.email,
             'can_edit': (m.uploaded_by == request.user or request.user.is_portal_admin),
 
@@ -405,7 +428,7 @@ def api_courses(request):
     """
     Return all available courses, faculty members, and material types for UI population.
     """
-    courses = list(Course.objects.values('id', 'code', 'name', 'department'))
+    courses = list(Course.objects.values('id', 'code', 'name', 'credits', 'department'))
     faculty = list(User.objects.filter(role='faculty').values('id', 'first_name', 'last_name', 'email'))
     m_types = list(MaterialType.objects.values('id', 'name', 'icon'))
     
@@ -418,6 +441,32 @@ def api_courses(request):
         'faculty': faculty,
         'types': m_types
     })
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(['POST'])
+def api_rate_material(request, material_id):
+    try:
+        m = Material.objects.get(pk=material_id)
+        body = json.loads(request.body)
+        score = int(body.get('score'))
+        if not (1 <= score <= 5):
+            return JsonResponse({'error': 'Invalid score'}, status=400)
+            
+        rating, created = MaterialRating.objects.update_or_create(
+            material=m, user=request.user,
+            defaults={'score': score}
+        )
+        # Re-fetch to get updated averages
+        m.refresh_from_db()
+        return JsonResponse({
+            'message': 'Rating submitted!',
+            'average_rating': round(m.average_rating, 1),
+            'rating_count': m.rating_count
+        })
+    except (Material.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({'error': 'Invalid data'}, status=400)
 
 @login_required
 @csrf_exempt

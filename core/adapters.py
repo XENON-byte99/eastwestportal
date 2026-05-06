@@ -5,7 +5,7 @@ from core.utils import notify_admins
 
 
 
-ALLOWED_DOMAIN = 'ewubd.edu'
+ALLOWED_DOMAIN = 'std.ewubd.edu'
 
 
 class EWUAccountAdapter(DefaultAccountAdapter):

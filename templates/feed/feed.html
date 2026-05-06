@@ -64,10 +64,16 @@
                 <textarea id="postContent" class="form-control border-0 bg-transparent fs-5" 
                           placeholder="What's on your mind?" rows="4" style="resize: none; outline: none; box-shadow: none;"></textarea>
                 
+                <div id="mediaPreviewContainer" class="d-none mt-2 position-relative d-inline-block">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 bg-light rounded-circle p-2 shadow-sm" style="z-index: 10;" aria-label="Close" onclick="clearPostMedia()"></button>
+                    <img id="postMediaPreview" class="img-fluid rounded" style="max-height: 200px;">
+                </div>
+                <input type="file" id="postMedia" class="d-none" accept="image/*" onchange="handlePostMediaChange(this)">
+                
                 <div class="border rounded-3 p-3 mt-3 d-flex justify-content-between align-items-center">
                     <span class="fw-semibold small">Add to your post</span>
                     <div class="d-flex gap-3">
-                        <i class="fas fa-images text-success cursor-pointer" title="Photo/Video"></i>
+                        <i class="fas fa-images text-success cursor-pointer" title="Photo/Video" onclick="document.getElementById('postMedia').click()"></i>
                         <i class="fas fa-user-tag text-primary cursor-pointer" title="Tag People"></i>
                         <i class="fas fa-smile text-warning cursor-pointer" title="Feeling/Activity"></i>
                         <i class="fas fa-location-dot text-danger cursor-pointer" title="Check In"></i>
@@ -210,6 +216,7 @@ function renderPostHtml(post) {
             </div>
             <div class="post-body">
                 <p class="mb-2" style="white-space: pre-wrap;">${post.content}</p>
+                ${post.media_url ? `<img src="${post.media_url}" class="img-fluid rounded mt-2 w-100" style="max-height: 500px; object-fit: cover;">` : ''}
             </div>
             ${!post.is_draft ? `
             <div class="px-3 pb-2 d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
@@ -289,8 +296,10 @@ function renderCommentHtml(comment) {
 
 async function submitPost(isDraft = false) {
     const content = document.getElementById('postContent').value.trim();
-    if (!content) {
-        showToast('Please enter some content', 'warning');
+    const fileInput = document.getElementById('postMedia');
+    
+    if (!content && fileInput.files.length === 0) {
+        showToast('Please enter some content or attach an image', 'warning');
         return;
     }
 
@@ -299,11 +308,18 @@ async function submitPost(isDraft = false) {
     btn.disabled = true;
     btn.innerText = isDraft ? 'Saving...' : 'Posting...';
 
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('is_draft', isDraft);
+    if (fileInput.files.length > 0) {
+        formData.append('media', fileInput.files[0]);
+    }
+
     try {
         const response = await fetch('/feed/api/posts/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-            body: JSON.stringify({ content: content, is_draft: isDraft })
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData
         });
         const result = await response.json();
         
@@ -311,6 +327,7 @@ async function submitPost(isDraft = false) {
             const modal = bootstrap.Modal.getInstance(document.getElementById('createPostModal'));
             modal.hide();
             document.getElementById('postContent').value = '';
+            clearPostMedia();
             showToast(result.message, result.is_approved || isDraft ? 'success' : 'info');
             
             if (result.is_approved || isDraft) {
@@ -490,6 +507,24 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', async () =
 
 document.getElementById('btnSubmitPost').addEventListener('click', () => submitPost(false));
 document.getElementById('btnSaveDraft').addEventListener('click', () => submitPost(true));
+
+function handlePostMediaChange(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('postMediaPreview').src = e.target.result;
+            document.getElementById('mediaPreviewContainer').classList.remove('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function clearPostMedia() {
+    document.getElementById('postMedia').value = '';
+    document.getElementById('postMediaPreview').src = '';
+    document.getElementById('mediaPreviewContainer').classList.add('d-none');
+}
+
 document.addEventListener('DOMContentLoaded', loadPosts);
 </script>
 

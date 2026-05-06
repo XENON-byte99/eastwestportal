@@ -5,6 +5,7 @@ from django.conf import settings
 class Course(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20, unique=True, help_text="e.g. CSE101")
+    credits = models.CharField(max_length=20, blank=True, null=True, help_text="e.g. 3+1=4")
     department = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -49,11 +50,13 @@ class Material(models.Model):
     
     is_approved = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=1)
+    average_rating = models.FloatField(default=0.0)
+    rating_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
     class Meta:
-        ordering = ['course__code', 'faculty__last_name', 'order']
+        ordering = ['-average_rating', 'course__code', 'order']
 
     def __str__(self):
         return f"[{self.material_type.name}] {self.title} — {self.course.code}"
@@ -72,4 +75,22 @@ class MaterialAttachment(models.Model):
 
     def __str__(self):
         return self.name or (self.link_url if self.is_link else self.file.name)
+
+
+class MaterialRating(models.Model):
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='ratings')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    score = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('material', 'user')
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Update material stats
+        ratings = self.material.ratings.all()
+        self.material.rating_count = ratings.count()
+        self.material.average_rating = sum(r.score for r in ratings) / self.material.rating_count
+        self.material.save()
 
