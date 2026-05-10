@@ -13,3 +13,15 @@ class Insight(models.Model):
 
     def __str__(self):
         return f"Insight for {self.course.code} by {self.author.username}"
+
+class Comment(models.Model):
+    insight = models.ForeignKey(Insight, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='insight_comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Comment by {self.author.username} on Insight#{self.insight_id}"
