@@ -16,4 +16,5 @@ urlpatterns = [
     path('materials/', include('materials.urls', namespace='materials')),
     path('marketplace/', include('marketplace.urls', namespace='marketplace')),
     path('projects/', include('projects.urls', namespace='projects')),
+    path('insights/', include('insights.urls', namespace='insights')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

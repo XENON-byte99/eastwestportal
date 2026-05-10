@@ -15,6 +15,11 @@
     <a href="{% url 'feed:index' %}" class="nav-link-portal {% if request.resolver_match.namespace == 'feed' %}active{% endif %}">
         <i class="fas fa-rss"></i> News Feed
     </a>
+    {% if not user.is_faculty or user.is_portal_admin %}
+    <a href="{% url 'insights:index' %}" class="nav-link-portal {% if request.resolver_match.namespace == 'insights' %}active{% endif %}">
+        <i class="fas fa-lightbulb"></i> Insights
+    </a>
+    {% endif %}
     <a href="{% url 'core:home' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
         <i class="fas fa-chart-line"></i> Dashboard
     </a>

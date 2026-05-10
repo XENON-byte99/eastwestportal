@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'materials',
     'marketplace',
     'projects',
+    'insights',
 ]
 
 SITE_ID = 1

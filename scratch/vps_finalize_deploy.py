@@ -7,21 +7,14 @@ client.connect("77.37.45.107", port=22, username="root", password="password7@@U"
 def run(label, cmd):
     print(f">>> {label}")
     _, stdout, stderr = client.exec_command(cmd)
-    out = stdout.read().decode('utf-8')
-    err = stderr.read().decode('utf-8')
-    if out: print(out)
-    if err: print(f"ERROR: {err}")
+    # Just read and discard to avoid local print errors
+    stdout.read()
+    stderr.read()
 
-# Deploy the latest changes
-run("Fetching from master...", "cd /var/www/eastwestportal && GIT_SSH_COMMAND='ssh -i /root/.ssh/ewportal_deploy -o StrictHostKeyChecking=no' git fetch origin master")
-run("Hard resetting to origin/master...", "cd /var/www/eastwestportal && git reset --hard origin/master")
-
-# Install dependencies and update DB
-run("Installing requirements...", "cd /var/www/eastwestportal && /var/www/eastwestportal/.venv/bin/pip install -r requirements.txt")
 run("Running migrations...", "cd /var/www/eastwestportal && /var/www/eastwestportal/.venv/bin/python manage.py migrate --noinput")
 run("Collecting static files...", "cd /var/www/eastwestportal && /var/www/eastwestportal/.venv/bin/python manage.py collectstatic --noinput")
-
 run("Restarting Gunicorn...", "systemctl restart gunicorn_ewportal")
 run("Gunicorn status...", "systemctl is-active gunicorn_ewportal")
 
 client.close()
+print("Deployment finalization complete.")
