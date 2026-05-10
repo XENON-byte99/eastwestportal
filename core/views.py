@@ -453,6 +453,35 @@ def api_create_announcement(request):
     return redirect('core:moderation_dashboard')
 
 
+@login_required
+@user_passes_test(is_staff)
+def api_update_announcement(request, pk):
+    """API for admins to update existing announcements."""
+    from .models import Announcement
+    announcement = get_object_or_404(Announcement, pk=pk)
+    if request.method == 'POST':
+        try:
+            announcement.title = request.POST.get('title', announcement.title)
+            announcement.content = request.POST.get('content', announcement.content)
+            announcement.category = request.POST.get('category', announcement.category)
+            announcement.save()
+            messages.success(request, "Announcement updated successfully!")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+    return redirect('core:moderation_dashboard')
+
+
+@login_required
+@user_passes_test(is_staff)
+def api_delete_announcement(request, pk):
+    """API for admins to delete announcements."""
+    from .models import Announcement
+    announcement = get_object_or_404(Announcement, pk=pk)
+    announcement.delete()
+    messages.success(request, "Announcement deleted successfully!")
+    return redirect('core:moderation_dashboard')
+
+
 def logout_view(request):
 
     from django.contrib.auth import logout

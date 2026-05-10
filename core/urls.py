@@ -27,6 +27,8 @@ urlpatterns = [
     path('moderation/approve/<str:model_name>/<int:obj_id>/', views.approve_item, name='approve_item'),
     path('moderation/reject/<str:model_name>/<int:obj_id>/', views.reject_item, name='reject_item'),
     path('moderation/announcement/create/', views.api_create_announcement, name='create_announcement'),
+    path('moderation/announcement/update/<int:pk>/', views.api_update_announcement, name='update_announcement'),
+    path('moderation/announcement/delete/<int:pk>/', views.api_delete_announcement, name='delete_announcement'),
     
     # Notifications
 

@@ -23,6 +23,9 @@
     <a href="{% url 'core:home' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
         <i class="fas fa-chart-line"></i> Dashboard
     </a>
+    <a href="{% url 'core:notices' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'notices' %}active{% endif %}">
+        <i class="fas fa-bullhorn"></i> Official Notices
+    </a>
     {% if not user.is_staff and not user.is_superuser %}
     <a href="{% url 'core:enrollment' %}" class="nav-link-portal {% if request.resolver_match.url_name == 'enrollment' %}active{% endif %}">
         <i class="fas fa-user-graduate"></i> Course Enrollment
